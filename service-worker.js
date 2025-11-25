@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skydash-v1';
+const CACHE_NAME = 'planepatrol';
 const ASSETS = [
     './',
     './index.html',

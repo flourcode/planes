@@ -1,6 +1,6 @@
 {
-    "name": "Sky Dashboard",
-    "short_name": "SkyDash",
+    "name": "Plane Patrol",
+    "short_name": "PlanePatrol",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#090c08",
