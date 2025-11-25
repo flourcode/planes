@@ -12,7 +12,8 @@
     
     <!-- PWA Manifest & Icons -->
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png?v=2">
+    <link rel="apple-touch-icon" href="icon.png?v=2">
     
     <title>Sky Dashboard</title>  
     <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
@@ -41,23 +42,40 @@
         
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        /* FIX 1: Force HTML to fill screen and match background */
+        html {
+            height: 100%;
+            width: 100%;
+            background-color: var(--theme-body-bg);
+            overflow: hidden;
+        }
+
+        /* FIX 2: Absolute positioning guarantees full bleed behind safe areas */
         body {
             background-color: var(--theme-body-bg);
             color: var(--theme-text);
             font-family: 'Space Mono', monospace;
-            height: 100vh; height: 100dvh;
-            overflow: hidden; position: fixed; width: 100%;
+            height: 100%; 
+            width: 100%;
+            position: absolute; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
             transition: background-color 0.3s ease;
-            /* Prevent iOS rubber-banding */
             overscroll-behavior: none; 
         }
 
-        /* === MAP CONTAINER === */
-        #map { position: fixed; inset: 0; z-index: 0; background: var(--theme-body-bg); }
+        /* FIX 3: Map specifically set to fill body completely */
+        #map { 
+            position: absolute; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            height: 100%; width: 100%;
+            z-index: 0; 
+            background: var(--theme-body-bg); 
+        }
         
         .maplibregl-canvas {
             filter: var(--theme-map-filter);
-            transition: filter 0.5s ease; /* Smooth theme transitions */
+            transition: filter 0.5s ease; 
         }
         
         .maplibregl-ctrl { display: none !important; }
