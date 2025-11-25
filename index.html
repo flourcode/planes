@@ -2,406 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport updated for iPhone Notch (viewport-fit=cover) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- iOS Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="planepatrol">
-    
-    <!-- PWA Manifest & Icons -->
+    <meta name="apple-mobile-web-app-title" content="PlanePatrol">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon.png?v=2">
     <link rel="apple-touch-icon" href="icon.png?v=2">
-    
-    <title>Plane Patrol</title>  
+    <title>PlanePatrol</title>  
     <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            /* Defaulting to SHADOW theme values */
             --theme-primary: #474056;
-            --theme-text: #dcd9e080;
-            --theme-text-secondary: #6b6675;
+            --theme-text: #dcd9e0; 
+            --theme-text-secondary: #8b8695; 
             --theme-bg: rgba(9, 12, 8, 0.98);
             --theme-bg-alt: rgba(33, 32, 38, 0.9);
-            --theme-border: rgba(71, 64, 86, 0.5);
+            --theme-border: rgba(113, 100, 134, 0.5);
             --theme-plane-color: #958da3;
             --theme-map-filter: grayscale(100%) invert(100%) brightness(65%) sepia(20%) hue-rotate(230deg) contrast(120%);
             --theme-body-bg: #090c08;
-            
-            /* Safe Area Variables for iPhone Notch/Home Bar */
             --safe-top: env(safe-area-inset-top, 20px);
             --safe-bottom: env(safe-area-inset-bottom, 20px);
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        /* FIX 1: Force HTML to fill screen and match background */
-        html {
-            height: 100%;
-            width: 100%;
-            background-color: var(--theme-body-bg);
-            overflow: hidden;
-        }
-
-        /* FIX 2: Absolute positioning guarantees full bleed behind safe areas */
-        body {
-            background-color: var(--theme-body-bg);
-            color: var(--theme-text);
-            font-family: 'Space Mono', monospace;
-            height: 100%; 
-            width: 100%;
-            position: absolute; 
-            top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden;
-            transition: background-color 0.3s ease;
-            overscroll-behavior: none; 
-        }
-
-        /* FIX 3: Map specifically set to fill body completely */
-        #map { 
-            position: absolute; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            height: 100%; width: 100%;
-            z-index: 0; 
-            background: var(--theme-body-bg); 
-        }
-        
-        .maplibregl-canvas {
-            filter: var(--theme-map-filter);
-            transition: filter 0.5s ease; 
-        }
-        
+        html { height: 100%; width: 100%; background-color: var(--theme-body-bg); overflow: hidden; }
+        body { background-color: var(--theme-body-bg); color: var(--theme-text); font-family: 'Space Mono', monospace; height: 100%; width: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden; transition: background-color 0.3s ease; overscroll-behavior: none; }
+        #map { position: absolute; top: 0; left: 0; right: 0; bottom: 0; height: 100%; width: 100%; z-index: 0; background: var(--theme-body-bg); }
+        .maplibregl-canvas { filter: var(--theme-map-filter); transition: filter 0.5s ease; }
         .maplibregl-ctrl { display: none !important; }
-
-        /* === HUD LAYOUT (CORNERS) === */
-        .hud-container {
-            position: fixed; inset: 0; z-index: 20; pointer-events: none;
-            /* Update padding to respect iPhone Notch/Home Indicator */
-            padding-top: max(20px, var(--safe-top));
-            padding-bottom: max(20px, var(--safe-bottom));
-            padding-left: clamp(20px, 4vw, 40px);
-            padding-right: clamp(20px, 4vw, 40px);
-            
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-
-        /* CORNER: TOP LEFT (Time/Date) */
+        .hud-container { position: fixed; inset: 0; z-index: 20; pointer-events: none; padding-top: max(20px, var(--safe-top)); padding-bottom: max(20px, var(--safe-bottom)); padding-left: clamp(20px, 4vw, 40px); padding-right: clamp(20px, 4vw, 40px); display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
         .hud-tl { align-self: start; justify-self: start; text-align: left; }
-        .dash-time {
-            font-size: clamp(40px, 8vw, 80px);
-            font-weight: 700; line-height: 0.9;
-            letter-spacing: -2px;
-            color: var(--theme-text);
-        }
-        .dash-date {
-            font-size: clamp(12px, 2vw, 16px);
-            font-weight: 400; margin-top: 6px;
-            text-transform: uppercase; letter-spacing: 1px;
-            color: var(--theme-text);
-			font-weight: 700;
-        }
-
-        /* CORNER: TOP RIGHT (Weather) */
+        .dash-time { font-size: clamp(40px, 10vw, 90px); font-weight: 700; line-height: 0.9; letter-spacing: -2px; color: var(--theme-text); text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .dash-date { font-size: clamp(14px, 3vw, 20px); font-weight: 700; margin-top: 8px; text-transform: uppercase; letter-spacing: 2px; color: var(--theme-primary); opacity: 1; }
         .hud-tr { align-self: start; justify-self: end; text-align: right; }
-        .wx-temp { font-size: clamp(32px, 6vw, 60px); font-weight: 700; line-height: 0.9; color: var(--theme-text); }
-        .wx-details { font-size: clamp(10px, 1.5vw, 14px); font-weight: 700; color: var(--theme-text); margin-top: 6px; }
-
-        /* CORNER: BOTTOM LEFT (Geo/Status) */
+        .wx-temp { font-size: clamp(32px, 8vw, 70px); font-weight: 700; line-height: 0.9; color: var(--theme-text); text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .wx-details { font-size: clamp(12px, 2.5vw, 16px); font-weight: 700; color: var(--theme-text); margin-top: 8px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
         .hud-bl { align-self: end; justify-self: start; text-align: left; }
-        .geo-loc { font-size: clamp(14px, 1.5vw, 24px); letter-spacing: 1px; font-weight: 700; color: var(--theme-text); }
-        .plane-count { font-size: clamp(10px, 1.5vw, 14px); font-weight: 700; color: var(--theme-text); margin-top: 6px; }
-
-        /* CORNER: BOTTOM RIGHT (Settings) */
+        .geo-loc { display:none; } 
+        .plane-count { font-size: clamp(14px, 3vw, 18px); font-weight: 700; color: var(--theme-primary); margin-top: 6px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; }
         .hud-br { align-self: end; justify-self: end; pointer-events: auto; }
-        .settings-btn {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: var(--theme-text); color: #ffffff;
-            border: 1px solid var(--theme-border);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.2s;
-        }
+        .settings-btn { width: 60px; height: 60px; border-radius: 50%; background: var(--theme-primary); color: #fff; border: 1px solid var(--theme-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .settings-btn:active { transform: scale(0.9); }
-
-        /* === TARGET DATA CARD (CENTER) === */
-        .target-card {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 380px;
-            background: var(--theme-bg);
-            border: 1px solid var(--theme-border);
-            border-radius: 20px;
-            padding: 24px;
-            z-index: 100;
-            display: none; opacity: 0;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            backdrop-filter: blur(20px);
-            /* Ensure it doesn't get hidden behind notch in landscape */
-            max-height: 80vh; overflow-y: auto;
-        }
+        .target-card { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 95%; max-width: 420px; background: var(--theme-bg); border: 2px solid var(--theme-primary); border-radius: 20px; padding: 30px; z-index: 100; display: none; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(20px); max-height: 80vh; overflow-y: auto; }
         .target-card.active { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
-
-        .t-label { font-size: 10px; color: var(--theme-text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-        .t-callsign { font-size: 42px; font-weight: 700; color: var(--theme-text); line-height: 0.9; margin-bottom: 4px; letter-spacing: -2px;}
-        .t-type { font-size: 13px; color: var(--theme-primary); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;}
-
-        .t-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; }
-        .t-item { background: var(--theme-bg-alt); padding: 12px; border-radius: 8px; }
-        .t-val { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--theme-text); }
-        .t-unit { font-size: 9px; color: var(--theme-text-secondary); margin-top: 2px; }
-        
+        .t-label { font-size: 12px; color: var(--theme-text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+        .t-callsign { font-size: 56px; font-weight: 700; color: var(--theme-text); line-height: 0.9; margin-bottom: 8px; letter-spacing: -2px; }
+        .t-type { font-size: 18px; color: var(--theme-primary); margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .t-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+        .t-item { background: var(--theme-bg-alt); padding: 16px; border-radius: 12px; border: 1px solid var(--theme-border);}
+        .t-val { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--theme-text); }
+        .t-unit { font-size: 11px; color: var(--theme-text-secondary); margin-top: 4px; font-weight: 700;}
         .t-phase-box { grid-column: span 2; text-align: center; color: var(--theme-text); }
-        .t-phase-val { color: var(--theme-text); letter-spacing: 2px; }
-
-        .close-target {
-            margin-top: 24px;
-            background: var(--theme-primary); color: #fff;
-            border: none; padding: 14px 32px;
-            font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px;
-            border-radius: 30px; cursor: pointer;
-        }
-
-        /* === MARKERS === */
-        .user-marker {
-            width: 30px; height: 30px;
-            background: var(--theme-text);
-            border-radius: 50%; border: none;
-            position: relative; z-index: 200;
-        }
-
-        /* === SETTINGS PANEL === */
-        .settings-panel {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            max-width: 90vw;
-            height: 100vh;
-            height: 100dvh; 
-            
-            background: var(--theme-bg);
-            backdrop-filter: blur(20px);
-            z-index: 300;
-            transition: right 0.3s ease;
-            border-left: 1px solid var(--theme-border);
-
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch; 
-            
-            /* iPhone padding for bottom swipe bar */
-            padding-top: var(--safe-top);
-            padding-bottom: max(80px, var(--safe-bottom)); 
-        }
+        .t-phase-val { color: var(--theme-text); letter-spacing: 2px; font-size: 20px; }
+        .close-target { margin-top: 32px; background: var(--theme-primary); color: #fff; border: none; padding: 18px 40px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 18px; border-radius: 40px; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .user-marker { width: 40px; height: 40px; background: var(--theme-primary); border: 4px solid #fff; border-radius: 50%; position: relative; z-index: 200; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .settings-panel { position: fixed; top: 0; right: -400px; width: 400px; max-width: 90vw; height: 100vh; height: 100dvh; background: var(--theme-bg); backdrop-filter: blur(20px); z-index: 300; transition: right 0.3s ease; border-left: 1px solid var(--theme-border); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: var(--safe-top); padding-bottom: max(80px, var(--safe-bottom)); }
         .settings-panel.open { right: 0; }
-        
-        .settings-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--theme-border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .settings-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--theme-primary);
-            letter-spacing: 2px;
-        }
-        .settings-close {
-            background: none;
-            border: 1px solid var(--theme-border);
-            color: var(--theme-primary);
-            padding: 8px 16px;
-            font-family: 'Space Mono', monospace;
-            font-size: 11px;
-            cursor: pointer;
-            border-radius: 8px;
-            letter-spacing: 1px;
-        }
-        .settings-close:hover {
-            background: var(--theme-bg-alt);
-        }
-        
-        .settings-section {
-            padding: 24px;
-            border-bottom: 1px solid var(--theme-border);
-        }
-        .settings-section-title {
-            font-size: 11px;
-            color: var(--theme-text-secondary);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-        }
-        
-        .setting-option {
-            padding: 14px;
-            margin-bottom: 8px;
-            background: var(--theme-bg-alt);
-            border: 1px solid var(--theme-border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            color: var(--theme-text);
-        }
-        .setting-option:hover {
-            transform: translateX(-2px);
-            border-color: var(--theme-primary);
-        }
-        .setting-option.selected {
-            background: var(--theme-primary);
-            border-color: var(--theme-primary);
-            color: #fff;
-            font-weight: 600;
-        }
-        
-        .range-chip {
-            flex: 1;
-            min-width: 60px;
-            padding: 12px;
-            background: var(--theme-bg-alt);
-            border: 1px solid var(--theme-border);
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--theme-text);
-        }
-        .range-chip:hover {
-            border-color: var(--theme-primary);
-        }
-        .range-chip.selected {
-            background: var(--theme-primary);
-            border-color: var(--theme-primary);
-            color: #fff;
-        }
-        
-        .toggle-switch {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
-            margin-bottom: 8px;
-            background: var(--theme-bg-alt);
-            border: 1px solid var(--theme-border);
-            border-radius: 8px;
-        }
-        .toggle-label {
-            font-size: 14px;
-            color: var(--theme-text);
-        }
-        .toggle-btn {
-            width: 50px;
-            height: 26px;
-            background: var(--theme-border);
-            border-radius: 13px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .toggle-btn.active {
-            background: var(--theme-primary);
-        }
-        .toggle-knob {
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            transition: left 0.3s;
-        }
-        .toggle-btn.active .toggle-knob {
-            left: 27px;
-        }
-        
-        .theme-selector {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px;
-            margin-bottom: 8px;
-            background: var(--theme-bg-alt);
-            border: 1px solid var(--theme-border);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .theme-selector:hover {
-            border-color: var(--theme-primary);
-        }
-        .theme-name {
-            font-size: 14px;
-            color: var(--theme-primary);
-            font-weight: 700;
-        }
-        
-        .settings-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 299;
-            display: none;
-        }
-        .settings-overlay.open {
-            display: block;
-        }
-
-        /* === START SCREEN === */
-        .start-overlay {
-            position: fixed; inset: 0; z-index: 500; background: var(--theme-body-bg);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .start-btn {
-            background: var(--theme-text); color: #fff; border: none;
-            padding: 20px 40px; font-family: 'Space Mono', monospace; font-weight: 700;
-            font-size: 18px; cursor: pointer; border-radius: 30px;
-        }
-		@keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-
-        #geoLoc {
-            transition: color 0.3s;
-        }
-
-        .searching {
-            color: var(--theme-primary) !important;
-            animation: pulse 1.5s infinite;
-        }
-        .app-credit {
-            font-size: 10px;
-            color: var(--theme-text-secondary); 
-            margin-top: 8px;   
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 700;
-            opacity: 0.6; 
-        }
+        .settings-header { padding: 32px; border-bottom: 1px solid var(--theme-border); display: flex; justify-content: space-between; align-items: center; }
+        .settings-title { font-size: 24px; font-weight: 700; color: var(--theme-primary); letter-spacing: 2px; }
+        .settings-close { background: var(--theme-bg-alt); border: 2px solid var(--theme-primary); color: var(--theme-text); padding: 12px 24px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 12px; letter-spacing: 1px; }
+        .settings-section { padding: 32px; border-bottom: 1px solid var(--theme-border); }
+        .settings-section-title { font-size: 14px; color: var(--theme-text-secondary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; font-weight: 700;}
+        .setting-option { padding: 20px; margin-bottom: 12px; background: var(--theme-bg-alt); border: 1px solid var(--theme-border); border-radius: 12px; cursor: pointer; transition: all 0.2s; font-size: 18px; color: var(--theme-text); font-weight: 600; }
+        .setting-option.selected { background: var(--theme-primary); border-color: var(--theme-primary); color: #fff; }
+        .range-chip { flex: 1; min-width: 70px; padding: 16px; background: var(--theme-bg-alt); border: 1px solid var(--theme-border); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 16px; font-weight: 700; color: var(--theme-text); }
+        .range-chip.selected { background: var(--theme-primary); border-color: var(--theme-primary); color: #fff; }
+        .toggle-switch { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 12px; background: var(--theme-bg-alt); border: 1px solid var(--theme-border); border-radius: 12px; }
+        .toggle-label { font-size: 18px; color: var(--theme-text); font-weight: 600; }
+        .toggle-btn { width: 60px; height: 34px; background: var(--theme-border); border-radius: 17px; position: relative; cursor: pointer; transition: background 0.3s; }
+        .toggle-btn.active { background: var(--theme-primary); }
+        .toggle-knob { width: 26px; height: 26px; background: #fff; border-radius: 50%; position: absolute; top: 4px; left: 4px; transition: left 0.3s; }
+        .toggle-btn.active .toggle-knob { left: 30px; }
+        .theme-selector { display: flex; justify-content: space-between; align-items: center; padding: 20px; margin-bottom: 12px; background: var(--theme-bg-alt); border: 1px solid var(--theme-border); border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+        .theme-name { font-size: 18px; color: var(--theme-primary); font-weight: 700; }
+        .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 299; display: none; }
+        .settings-overlay.open { display: block; }
+        .splash-screen { position: fixed; inset: 0; z-index: 9999; background-color: #090c08; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-out; text-align: center; padding: 20px; }
+        .splash-screen.hidden { opacity: 0; pointer-events: none; }
+        .splash-title { font-size: clamp(32px, 8vw, 60px); font-weight: 700; color: #dcd9e0; letter-spacing: -1px; margin-bottom: 20px; text-transform: uppercase; }
+        .splash-status { font-size: 20px; color: #474056; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        body.loading { overflow: hidden; pointer-events: none; }
+        .app-credit { font-size: 12px; color: var(--theme-text-secondary); margin-top: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
     </style>
 </head>
-<body>
+<body class="loading"> 
+    
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-title">Plane Patrol</div>
+        <div class="splash-status" id="splashStatus">INITIALIZING SYSTEMS...</div>
+    </div>
+
     <div id="map"></div>
     <div class="hud-container">
         <div class="hud-tl">
-            <div class="dash-time" id="clockTime">--:--</div>
-            <div class="dash-date" id="clockDate">INITIALIZING</div>
+            <div class="dash-time" id="locationDisplay">--</div> 
+            <div class="dash-date" id="statusDisplay">OFFLINE</div>
         </div>
         <div class="hud-tr">
             <div class="wx-temp" id="wxTemp">--°</div>
@@ -411,12 +112,11 @@
             </div>
         </div>
         <div class="hud-bl">
-            <div class="geo-loc" id="geoLoc">WAITING FOR GEO</div>
             <div class="plane-count" id="planeCountStatus">RADAR OFFLINE</div>
             <div class="app-credit">MADE BY MARK</div>
         </div>
         <div class="hud-br">
-            <button class="settings-btn" id="settingsBtn">⋯</button>
+            <button class="settings-btn" id="settingsBtn">...</button>
         </div>
     </div>
 
@@ -483,12 +183,12 @@
         </div>
         
         <div class="settings-section">
-            <div class="settings-section-title">Range</div>
+            <div class="settings-section-title">Radar Range (mi)</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <div class="range-chip" id="chipR3" onclick="selectRadius(3)">3 mi</div>
-                <div class="range-chip selected" id="chipR5" onclick="selectRadius(5)">5 mi</div>
-                <div class="range-chip" id="chipR10" onclick="selectRadius(10)">10 mi</div>
-                <div class="range-chip" id="chipR20" onclick="selectRadius(20)">20 mi</div>
+                <div class="range-chip" id="chipR3" onclick="selectRadius(3)">3</div>
+                <div class="range-chip selected" id="chipR5" onclick="selectRadius(5)">5</div>
+                <div class="range-chip" id="chipR10" onclick="selectRadius(10)">10</div>
+                <div class="range-chip" id="chipR20" onclick="selectRadius(20)">20</div>
             </div>
         </div>
         
@@ -511,12 +211,8 @@
             </div>
         </div>
     </div>
-
-    <div class="start-overlay" id="startScreen">
-        <button class="start-btn" onclick="startApp()">INITIALIZE SYSTEM</button>
-    </div>
+    
     <script>
-        // Register Service Worker for Offline Capabilities
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./service-worker.js')
                 .then(() => console.log('SW Registered'))
@@ -536,56 +232,56 @@
             PHASE_CLIMB_THRESHOLD: 500,
             PHASE_DESCENT_THRESHOLD: -500,
             GEO_UPDATE_THROTTLE: 1000,
-            LAT_LON_DECIMALS: 2,
+            LAT_LON_DECIMALS: 4, 
             KNOTS_TO_KMH: 1.852,
             ALTITUDE_ROUNDING: 100,
             TARGET_ZOOM: 13,
             FLY_SPEED: 1.2,
             LOCATIONS: {
-                JFK: { name: 'JFK - New York', lat: 40.6413, lon: -73.7781 },
-                SEA: { name: 'SEA - Seattle', lat: 47.4502, lon: -122.3088 },
-                GEG: { name: 'GEG - Spokane', lat: 47.6256, lon: -117.5369 },
-                ATL: { name: 'ATL - Atlanta', lat: 33.6407, lon: -84.4277 },
-                MIA: { name: 'MIA - Miami', lat: 25.7959, lon: -80.2870 },
-                DEN: { name: 'DEN - Denver', lat: 39.8561, lon: -104.6737 },
-                ORD: { name: 'ORD - Chicago', lat: 41.9742, lon: -87.9073 },
-                LAX: { name: 'LAX - Los Angeles', lat: 33.9416, lon: -118.4085 }
+                JFK: { name: 'JFK', lat: 40.6413, lon: -73.7781 },
+                SEA: { name: 'SEA', lat: 47.4502, lon: -122.3088 },
+                GEG: { name: 'GEG', lat: 47.6256, lon: -117.5369 },
+                ATL: { name: 'ATL', lat: 33.6407, lon: -84.4277 },
+                MIA: { name: 'MIA', lat: 25.7959, lon: -80.2870 },
+                DEN: { name: 'DEN', lat: 39.8561, lon: -104.6737 },
+                ORD: { name: 'ORD', lat: 41.9742, lon: -87.9073 },
+                LAX: { name: 'LAX', lat: 33.9416, lon: -118.4085 }
             },
 
             THEMES: {
                 lite: {
                     name: 'Paper Map',
                     primary: '#727d71',
-                    text: '#00000080',
-                    textSecondary: '#666',
+                    text: '#000000', 
+                    textSecondary: '#444',
                     bg: 'rgba(255, 255, 255, 0.98)',
                     bgAlt: 'rgba(242, 242, 247, 0.95)',
-                    border: 'rgba(0, 0, 0, 0.1)',
-                    planeColor: '#27272780',
+                    border: 'rgba(0, 0, 0, 0.2)',
+                    planeColor: '#272727',
                     mapFilter: 'grayscale(60%) sepia(20%) saturate(60%)',
                     bodyBg: '#F2F2F7'
                 },
                 ranger: {
                     name: 'Tactical',
                     primary: '#a3b18a',  
-                    text: '#dad7cd80',   
-                    textSecondary: '#588157',    
+                    text: '#dad7cd', 
+                    textSecondary: '#8ba188',    
                     bg: 'rgba(52, 78, 65, 0.95)', 
                     bgAlt: 'rgba(58, 90, 64, 0.9)', 
-                    border: 'rgba(163, 177, 138, 0.3)', 
-                    planeColor: '#dad7cd80',       
+                    border: 'rgba(163, 177, 138, 0.5)', 
+                    planeColor: '#dad7cd',       
                     mapFilter: 'grayscale(40%) invert(100%) sepia(30%) hue-rotate(70deg) brightness(50%) contrast(120%)',
                     bodyBg: '#344e41'
                 },
                 shadow: {
                     name: 'Stealth',
                     primary: '#474056',         
-                    text: '#dcd9e080',             
-                    textSecondary: '#6b6675',    
+                    text: '#dcd9e0', 
+                    textSecondary: '#8b8695',    
                     bg: 'rgba(9, 12, 8, 0.98)',  
                     bgAlt: 'rgba(33, 32, 38, 0.9)', 
-                    border: 'rgba(71, 64, 86, 0.5)', 
-                    planeColor: '#958da380',      
+                    border: 'rgba(113, 100, 134, 0.5)', 
+                    planeColor: '#958da3',      
                     mapFilter: 'grayscale(100%) invert(100%) brightness(65%) sepia(20%) hue-rotate(230deg) contrast(120%)',
                     bodyBg: '#090c08'
                 }
@@ -600,7 +296,7 @@
             "A20N": "Airbus A320neo",
             "A321": "Airbus A321",
             "A21N": "Airbus A321neo",
-            "A332": "Airbus A330-200 / KC-30 Voyager", // Merged Civ/Mil
+            "A332": "Airbus A330-200", 
             "A333": "Airbus A330-300",
             "A338": "Airbus A330-800",
             "A339": "Airbus A330-900",
@@ -616,7 +312,7 @@
 
             // --- BOEING ---
             "B737": "Boeing 737-700",
-            "B738": "Boeing 737-800 / P-8 Poseidon",   // Merged Civ/Mil
+            "B738": "Boeing 737-800",   
             "B739": "Boeing 737-900",
             "B38M": "Boeing 737 MAX 8",
             "B39M": "Boeing 737 MAX 9",
@@ -630,15 +326,15 @@
             "B77L": "Boeing 777-200LR",
             "B77W": "Boeing 777-300ER",
             "B77X": "Boeing 777X",
-            "B788": "Boeing 787-8 Dreamliner",
-            "B789": "Boeing 787-9 Dreamliner",
-            "B78X": "Boeing 787-10 Dreamliner",
+            "B788": "Boeing 787-8",
+            "B789": "Boeing 787-9",
+            "B78X": "Boeing 787-10",
             
             // --- CARGO & LEGACY ---
             "MD11": "McDonnell Douglas MD-11",
-            "DC10": "McDonnell Douglas DC-10 / KC-10 Extender", // Merged Civ/Mil
+            "DC10": "McDonnell Douglas DC-10", 
             "B712": "Boeing 717-200",
-            "B703": "Boeing 707 / E-3 Sentry / KC-135",
+            "B703": "Boeing 707 / KC-135",
             "B722": "Boeing 727-200",
 
             // --- REGIONAL & COMMUTER ---
@@ -651,15 +347,15 @@
             "E295": "Embraer E195-E2",
             "ERJ3": "Embraer ERJ-135",
             "ERJ4": "Embraer ERJ-145",
-            "CRJ1": "Bombardier CRJ-100",
-            "CRJ2": "Bombardier CRJ-200",
-            "CRJ7": "Bombardier CRJ-700",
-            "CRJ9": "Bombardier CRJ-900",
-            "CL60": "Bombardier Challenger 600",
+            "CRJ1": "CRJ-100",
+            "CRJ2": "CRJ-200",
+            "CRJ7": "CRJ-700",
+            "CRJ9": "CRJ-900",
+            "CL60": "Challenger 600",
             "DH8A": "Dash 8-100",
             "DH8B": "Dash 8-200",
             "DH8C": "Dash 8-300",
-            "DH8D": "Dash 8-400 (Q400)",
+            "DH8D": "Q400",
             "AT72": "ATR 72",
             "AT75": "ATR 72-500",
             "AT76": "ATR 72-600",
@@ -667,59 +363,59 @@
             "AT46": "ATR 42-600",
             
             // --- BUSINESS JETS & UTILITY ---
-            "E50P": "Embraer Phenom 100",
-            "E55P": "Embraer Phenom 300",
-            "LJ35": "Learjet 35/36",
-            "LJ45": "Learjet 40/45",
+            "E50P": "Phenom 100",
+            "E55P": "Phenom 300",
+            "LJ35": "Learjet 35",
+            "LJ45": "Learjet 45",
             "LJ60": "Learjet 60",
-            "LJ75": "Learjet 70/75",
-            "H25B": "Hawker 800XP / Raytheon T-1 Jayhawk", // Merged Civ/Mil
-            "GALX": "Gulfstream G200 (Galaxy)",
-            "EA50": "Eclipse 500/550",
+            "LJ75": "Learjet 75",
+            "H25B": "Hawker 800XP", 
+            "GALX": "Gulfstream G200",
+            "EA50": "Eclipse 500",
             "GLF4": "Gulfstream IV",
             "GLF5": "Gulfstream V",
             "GLF6": "Gulfstream G650",
             "G280": "Gulfstream G280",
-            "C510": "Cessna Citation Mustang",
-            "C525": "Cessna Citation Jet",
-            "C56X": "Cessna Citation Excel",
-            "C680": "Cessna Citation Sovereign",
-            "C700": "Cessna Citation Longitude",
-            "CL30": "Bombardier Challenger 300",
-            "CL35": "Bombardier Challenger 350",
-            "GLEX": "Bombardier Global Express",
-            "GL75": "Bombardier Global 7500",
-            "FA7X": "Dassault Falcon 7X",
-            "FA8X": "Dassault Falcon 8X",
-            "F2TH": "Dassault Falcon 2000",
+            "C510": "Citation Mustang",
+            "C525": "Citation Jet",
+            "C56X": "Citation Excel",
+            "C680": "Citation Sovereign",
+            "C700": "Citation Longitude",
+            "CL30": "Challenger 300",
+            "CL35": "Challenger 350",
+            "GLEX": "Global Express",
+            "GL75": "Global 7500",
+            "FA7X": "Falcon 7X",
+            "FA8X": "Falcon 8X",
+            "F2TH": "Falcon 2000",
             "PC24": "Pilatus PC-24",
             "HDJT": "HondaJet",
             
             // --- TURBOPROPS (Dual Use) ---
-            "TBM7": "Daher TBM 700",
-            "TBM8": "Daher TBM 850",
-            "TBM9": "Daher TBM 900-940",
-            "BE9L": "Beechcraft King Air C90",
-            "BE20": "Beechcraft King Air 200 / C-12 Huron", // Merged Civ/Mil
-            "B350": "Beechcraft King Air 350 / MC-12",      // Merged Civ/Mil
-            "PC12": "Pilatus PC-12 / U-28A Draco",          // Merged Civ/Mil
+            "TBM7": "TBM 700",
+            "TBM8": "TBM 850",
+            "TBM9": "TBM 900",
+            "BE9L": "King Air C90",
+            "BE20": "King Air 200", 
+            "B350": "King Air 350",      
+            "PC12": "Pilatus PC-12",          
 
             // --- GENERAL AVIATION ---
             "C150": "Cessna 150",
             "C152": "Cessna 152",
-            "C172": "Cessna 172 Skyhawk",
-            "C182": "Cessna 182 Skylane",
-            "C208": "Cessna 208 Caravan",
-            "PA28": "Piper Cherokee/Archer",
+            "C172": "Cessna 172",
+            "C182": "Cessna 182",
+            "C208": "Cessna Caravan",
+            "PA28": "Piper Cherokee",
             "PA34": "Piper Seneca",
             "PA44": "Piper Seminole",
             "SR20": "Cirrus SR20",
             "SR22": "Cirrus SR22",
-            "SF50": "Cirrus Vision Jet",
-            "BE36": "Beechcraft Bonanza",
-            "BE58": "Beechcraft Baron",
-            "DA40": "Diamond DA40 Star",
-            "DA42": "Diamond DA42 Twin Star",
+            "SF50": "Vision Jet",
+            "BE36": "Bonanza",
+            "BE58": "Baron",
+            "DA40": "Diamond Star",
+            "DA42": "Twin Star",
             "DA62": "Diamond DA62",
             
             // --- EXPERIMENTAL ---
@@ -731,94 +427,123 @@
             "ICON": "ICON A5",
 
             // --- MILITARY JETS & CARGO ---
-            "C130": "Lockheed C-130 Hercules",
-            "C30J": "Lockheed C-130J Super Hercules",
-            "C17":  "Boeing C-17 Globemaster III",
-            "K35R": "Boeing KC-135 Stratotanker",
+            "C130": "C-130 Hercules",
+            "C30J": "C-130J Super Hercules",
+            "C17":  "C-17 Globemaster",
+            "K35R": "KC-135 Stratotanker",
             "F16":  "F-16 Fighting Falcon",
             "F18":  "F/A-18 Hornet",
             "F22":  "F-22 Raptor",
             "F35":  "F-35 Lightning II",
             "TEX2": "T-6 Texan II",
-            "T38":  "Northrop T-38 Talon",
-            "T45":  "McDonnell Douglas T-45 Goshawk",
-            "L39":  "Aero L-39 Albatros",
-            "C5":   "Lockheed C-5 Galaxy",
-            "C5M":  "Lockheed C-5M Super Galaxy",
-            "A400": "Airbus A400M Atlas",
-            "K46":  "Boeing KC-46 Pegasus",
+            "T38":  "T-38 Talon",
+            "T45":  "T-45 Goshawk",
+            "L39":  "L-39 Albatros",
+            "C5":   "C-5 Galaxy",
+            "C5M":  "C-5M Super Galaxy",
+            "A400": "A400M Atlas",
+            "K46":  "KC-46 Pegasus",
 
             // --- BOMBERS & SPECIAL MISSION ---
-            "B52":  "Boeing B-52 Stratofortress",
-            "B1":   "Rockwell B-1 Lancer",
-            "B2":   "Northrop B-2 Spirit",
-            "A10":  "Fairchild Republic A-10 Thunderbolt II",
-            "E3TF": "Boeing E-3 Sentry (AWACS)",
-            "E3CF": "Boeing E-3 Sentry (AWACS)",
-            "E6":   "Boeing E-6 Mercury (TACAMO)", 
-            "E2":   "Northrop Grumman E-2 Hawkeye",
-            "P8":   "Boeing P-8 Poseidon",    
-            "C135": "Boeing RC-135 Rivet Joint / WC-135",
-            "U2":   "Lockheed U-2 Dragon Lady",
-
-            // --- EUROPEAN FIGHTERS ---
-            "EUFI": "Eurofighter Typhoon",
-            "RAFA": "Dassault Rafale",
-            "GRIP": "Saab JAS 39 Gripen",
-            "TORN": "Panavia Tornado",
+            "B52":  "B-52 Stratofortress",
+            "B1":   "B-1 Lancer",
+            "B2":   "B-2 Spirit",
+            "A10":  "A-10 Thunderbolt II",
+            "E3TF": "E-3 Sentry (AWACS)",
+            "E3CF": "E-3 Sentry (AWACS)",
+            "E6":   "E-6 Mercury", 
+            "E2":   "E-2 Hawkeye",
+            "P8":   "P-8 Poseidon",    
+            "C135": "RC-135 Rivet Joint",
+            "U2":   "U-2 Dragon Lady",
 
             // --- HELICOPTERS ---
             "R44":  "Robinson R44",
             "R66":  "Robinson R66",
-            "B06":  "Bell 206 JetRanger / OH-58 Kiowa",
+            "B06":  "Bell 206",
             "B407": "Bell 407",
-            "EC35": "Airbus H135/EC135",
+            "EC35": "H135/EC135",
             "S76":  "Sikorsky S-76",
             "S92":  "Sikorsky S-92",
-            "AW13": "AgustaWestland AW139",
-            "H64":  "Boeing AH-64 Apache",
-            "H47":  "Boeing CH-47 Chinook",
-            "H53":  "Sikorsky CH-53 Sea Stallion",
-            "V22":  "Bell-Boeing V-22 Osprey",
+            "AW13": "AW139",
+            "H64":  "AH-64 Apache",
+            "H47":  "CH-47 Chinook",
+            "H53":  "CH-53 Sea Stallion",
+            "V22":  "V-22 Osprey",
             "TIGR": "Eurocopter Tiger",
-            "NH90": "NHIndustries NH90",
-            "UH1":  "Bell UH-1 Iroquois / AH-1 Cobra",
-            "UH1N": "Bell UH-1N Twin Huey",
-            "UH1Y": "Bell UH-1Y Venom",
-            "GAZL": "Aerospatiale SA341/342 Gazelle",
-            "LYNX": "AgustaWestland AW159 Wildcat",
-            "H500": "MD 500 / AH-6 Little Bird",
-            "EXPL": "MD 900/902 Explorer",
-            "B429": "Bell 429 GlobalRanger",
+            "NH90": "NH90",
+            "UH1":  "UH-1 Huey",
+            "UH1N": "UH-1N Twin Huey",
+            "UH1Y": "UH-1Y Venom",
+            "GAZL": "Gazelle",
+            "LYNX": "AW159 Wildcat",
+            "H500": "MD 500 / Little Bird",
+            "EXPL": "MD Explorer",
+            "B429": "Bell 429",
             "EN48": "Enstrom 480",
-            "EH10": "AgustaWestland AW101 Merlin",
-            "AS32": "Airbus AS332 Super Puma",
-            "EC25": "Airbus EC225 Super Puma",
-            "AS65": "Airbus AS365 Dauphin / MH-65 Dolphin",
-            "H60":  "Sikorsky UH-60 Black Hawk / Seahawk",
-            "EC45": "Airbus H145 / UH-72 Lakota",
-            "AS50": "Airbus H125 / AS350 / Fennec"
+            "EH10": "AW101 Merlin",
+            "AS32": "AS332 Super Puma",
+            "EC25": "EC225 Super Puma",
+            "AS65": "AS365 Dauphin",
+            "H60":  "Black Hawk / Seahawk",
+            "EC45": "H145 / Lakota",
+            "AS50": "H125 / AS350"
         };
 
-        function getAircraftTypeName(typeCode) {
-            if (!typeCode || typeCode === "") return "Unknown Type";
-            if (AIRCRAFT_TYPES[typeCode]) return AIRCRAFT_TYPES[typeCode];
-            if (typeCode.startsWith("B7")) return "Boeing " + typeCode;
-            if (typeCode.startsWith("A3") || typeCode.startsWith("A2")) return "Airbus " + typeCode;
-            if (typeCode.startsWith("C1") || typeCode.startsWith("C2")) return "Cessna " + typeCode;
-            if (typeCode.startsWith("E") && typeCode.endsWith("P")) return "Embraer Phenom"; 
-            if (typeCode === "GLID") return "Glider";
-            if (typeCode === "ULAC") return "Ultralight";
-            if (typeCode === "GRND") return "Ground Vehicle";
-            if (typeCode === "TOW")  return "Tow Vehicle"; 
-            return typeCode;
+        // --- 1. TYPE CATEGORIZATION HELPER ---
+        // Returns: 'plane-heavy', 'plane-fighter', 'plane-prop', 'plane-jet', 'heli-icon'
+        function getIconType(t, category) {
+            if (!t) return 'plane-jet'; 
+            const type = t.toUpperCase();
+            
+            // FIX: Removed 'A1' from here. A1 is Light Fixed Wing (Cessna). A7 is Rotorcraft.
+            if (category === 'A7' || category === 'H' || type === 'HEL') return 'heli-icon';
+
+            // 1. FIGHTERS
+            const fighters = ['F16','F18','F22','F35','EUFI','RAFA','GRIP','TORN','T38','T45','L39','A10','F15','F14','MIG29','SU27','SU35','SU57','J20','J31','J10','JF17','M2000','M4000','F4','F5','F86','MIG15','MIG17','MIG19','MIG21','MIG23','MIG25','MIG31','SU24','SU25','SU30','SU34'];
+            if (fighters.includes(type)) return 'plane-fighter';
+
+            // 2. HEAVIES
+            const heavies = ['B744','B748','A388','A343','A346','C5','C5M','B52','C17','IL76','AN124','A124','DC10','MD11','K35R','C135','E3TF','E3CF','B772','B77W','B77L','B788','B789','B78X','A359','A35K','A332','A333','A338','A339'];
+            if (heavies.includes(type)) return 'plane-heavy';
+
+            // 3. PROPS 
+            // Explicitly list props to avoid capturing jets
+            const props = [
+                'C130','C30J','A400','C295','CN35', // Military
+                'AT72','AT75','AT76','AT45','AT46', // ATR
+                'DH8A','DH8B','DH8C','DH8D', // Dash 8
+                'PC12', // PC-12 (PC-24 is Jet)
+                'TBM7','TBM8','TBM9', // TBM
+                'BE9L','BE20','B350', 'BE36','BE58', // King Air / Bonanza / Baron
+                'C208', 'C172', 'C182', 'C150', 'C152', // Cessna Props
+                'PA28', 'PA34', 'PA44', 'PA46', // Piper
+                'SR20', 'SR22', // Cirrus Props
+                'DA40', 'DA42', 'DA62', // Diamond
+                'RV6', 'RV7', 'RV8', 'RV10', 'RV12' // Vans
+            ];
+            
+            if (props.includes(type)) return 'plane-prop';
+
+            // Catch-all for common prop prefixes, excluding known Jets
+            if (type.startsWith('C1') && type !== 'C17') return 'plane-prop'; // C1xx (Cessna) but not C17
+            if (type.startsWith('PA')) return 'plane-prop'; // Pipers
+
+            // 4. DEFAULT JET (Airliners, Bizjets)
+            return 'plane-jet';
         }
 
-        // DOM Cache
+        function getAircraftTypeName(typeCode) {
+            if (!typeCode) return "Unknown Type";
+            if (AIRCRAFT_TYPES[typeCode]) return AIRCRAFT_TYPES[typeCode];
+            return typeCode; 
+        }
+
         const DOM = {
-            startScreen: document.getElementById('startScreen'),
-            clockTime: document.getElementById('clockTime'),
-            clockDate: document.getElementById('clockDate'),
+            splashScreen: document.getElementById('splashScreen'),
+            splashStatus: document.getElementById('splashStatus'),
+            locationDisplay: document.getElementById('locationDisplay'),
+            statusDisplay: document.getElementById('statusDisplay'),
             geoLoc: document.getElementById('geoLoc'),
             planeCount: document.getElementById('planeCountStatus'),
             wxTemp: document.getElementById('wxTemp'),
@@ -841,116 +566,57 @@
         };
 
         const state = {
-            lat: null, lon: null,
-            radius: 5,
-            map: null,
-            userMarker: null,
-            planesData: new Map(),
-            selectedHex: null, 
-            wxInterval: null,
-            planeInterval: null,
-            lastGeoUpdate: 0,
-            lastWxUpdate: 0,
-            lastKnownGeo: null,
-            useGeo: true,
-            selectedAirport: null,
-            radarEnabled: true,
-            autoAnnounce: false,
-            announcedPlanes: new Set(),
-            theme: 'shadow', // Defaulting to Shadow here too
-            watchId: null
+            lat: null, lon: null, radius: 5, map: null, userMarker: null,
+            planesData: new Map(), selectedHex: null, wxInterval: null, planeInterval: null,
+            lastGeoUpdate: 0, lastWxUpdate: 0, lastKnownGeo: null, useGeo: true, selectedAirport: null,
+            radarEnabled: true, autoAnnounce: false, announcedPlanes: new Set(), theme: 'shadow', watchId: null
         };
 
         function startApp() {
-            DOM.startScreen.style.display = 'none';
-            speak("Initializing system. Please standby.");
-            initClock();
-            DOM.geoLoc.textContent = "ACQUIRING GEO...";
-            DOM.geoLoc.classList.add('searching');
-            
+            speak("Initializing Plane Patrol. Acquiring location.");
             if (!state.map) {
-                state.lat = 39.8;
-                state.lon = -98.5;
+                state.lat = 39.8; state.lon = -98.5;
                 initMap();
-                
-                if (state.map) {
-                    state.map.dragPan.disable();
-                    state.map.scrollZoom.disable();
-                }
+                if (state.map) { state.map.dragPan.disable(); state.map.scrollZoom.disable(); }
             }
-
             if (navigator.geolocation) {
+                DOM.splashStatus.textContent = "ACQUIRING LOCATION...";
                 state.watchId = navigator.geolocation.watchPosition(
                     (pos) => {
-                        DOM.geoLoc.classList.remove('searching');
                         state.lastKnownGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                        
                         if (state.useGeo) {
                             const isFirstLock = (state.lat === 39.8 && state.lon === -98.5);
-                            state.lat = pos.coords.latitude;
-                            state.lon = pos.coords.longitude;
-                            
-                            DOM.geoLoc.textContent = `${state.lat.toFixed(CONFIG.LAT_LON_DECIMALS)} N / ${state.lon.toFixed(CONFIG.LAT_LON_DECIMALS)} W`;
-                            
+                            state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
+                            DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°N`;
+                            DOM.statusDisplay.textContent = `${Math.abs(state.lon).toFixed(2)}°W`;
+                            if(isFirstLock) {
+                                DOM.splashStatus.textContent = "LINK ESTABLISHED";
+                                setTimeout(() => {
+                                    DOM.splashScreen.classList.add('hidden');
+                                    document.body.classList.remove('loading');
+                                    speak("Location locked. Radar active.");
+                                }, 1000);
+                            }
                             if (state.map) {
-                                state.map.dragPan.enable();
-                                state.map.scrollZoom.enable();
-                                state.map.touchZoomRotate.enable();
-                                state.map.doubleClickZoom.enable();
-                                
+                                state.map.dragPan.enable(); state.map.scrollZoom.enable();
+                                state.map.touchZoomRotate.enable(); state.map.doubleClickZoom.enable();
                                 if (isFirstLock) {
-                                    state.map.flyTo({ 
-                                        center: [state.lon, state.lat], 
-                                        zoom: getZoomForRadius(state.radius),
-                                        speed: 1.5 
-                                    });
-                                    speak("GEO location acquired.");
+                                    state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: 1.5 });
                                 }
                                 if(state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]);
                             }
                             if (!state.planeInterval) {
-                                updateWeather(true);
-                                fetchPlanes();
+                                updateWeather(true); fetchPlanes();
                                 state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
                                 requestAnimationFrame(animatePlanes); 
-                                if (!state.wxInterval) {
-                                    state.wxInterval = setInterval(() => updateWeather(false), 60000);
-                                }
+                                if (!state.wxInterval) state.wxInterval = setInterval(() => updateWeather(false), 60000);
                             }
                         }
                     }, 
-                    (err) => {
-                        DOM.geoLoc.classList.remove('searching');
-                        DOM.geoLoc.textContent = "GPS UNAVAILABLE";
-                        if(state.map) {
-                            state.map.dragPan.enable();
-                            state.map.scrollZoom.enable();
-                        }
-                        alert("GPS Signal lost or denied. Please select a preset location from settings.");
-                    },
+                    (err) => { DOM.splashStatus.textContent = "GPS SIGNAL LOST. RETRYING..."; speak("GPS Signal lost. Please wait."); },
                     { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
-            } else {
-                DOM.geoLoc.classList.remove('searching');
-                alert("GPS Not Supported");
-                if(state.map) {
-                    state.map.dragPan.enable();
-                    state.map.scrollZoom.enable();
-                }
-            }
-        }
-
-        function initClock() {
-            const update = () => {
-                const now = new Date();
-                const h = now.getHours().toString().padStart(2, '0');
-                const m = now.getMinutes().toString().padStart(2, '0');
-                DOM.clockTime.textContent = `${h}:${m}`;
-                const opts = { weekday: 'long', month: 'short', day: 'numeric' };
-                DOM.clockDate.textContent = now.toLocaleDateString('en-US', opts);
-            };
-            setInterval(update, 1000);
-            update();
+            } else { DOM.splashStatus.textContent = "GPS NOT SUPPORTED"; alert("GPS Not Supported"); }
         }
 
         function initMap() {
@@ -959,123 +625,81 @@
                     container: 'map',
                     style: {
                         version: 8,
-                        sources: {
-                            'osm': { type: 'raster', tiles: [CONFIG.MAP_TILES], tileSize: 256 }
-                        },
-                        layers: [
-                            { id: 'osm-layer', type: 'raster', source: 'osm' }
-                        ],
+                        sources: { 'osm': { type: 'raster', tiles: [CONFIG.MAP_TILES], tileSize: 256 } },
+                        layers: [ { id: 'osm-layer', type: 'raster', source: 'osm' } ],
                         glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf"
                     },
-                    center: [state.lon, state.lat],
-                    zoom: getZoomForRadius(state.radius),
-                    attributionControl: false,
-                    interactive: true
+                    center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius),
+                    attributionControl: false, interactive: true
                 });
 
                 state.map.on('load', () => {
-                    state.map.addSource('radar', {
-                        type: 'raster',
-                        tiles: [CONFIG.RADAR_TILE_URL],
-                        tileSize: 256
-                    });
-                    
-                    state.map.addLayer({
-                        id: 'radar-layer',
-                        type: 'raster',
-                        source: 'radar',
-                        paint: { 'raster-opacity': 0.5, 'raster-fade-duration': 0 }
-                    });
+                    state.map.addSource('radar', { type: 'raster', tiles: [CONFIG.RADAR_TILE_URL], tileSize: 256 });
+                    state.map.addLayer({ id: 'radar-layer', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.5, 'raster-fade-duration': 0 } });
 
-                    // --- 1. DRAW PLANE ICON (SVG-BASED) ---
+                    // --- 2. LOAD MULTIPLE ICONS ---
                     const width = 64, height = 64;
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.imageSmoothingEnabled = false;
                     
-                    const planeSVG = `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-5.0 -10.0 110.0 135.0">
- <g transform="rotate(0 50 57.5)"><path fill="#56555e" d="M93.4,59.6L72.3,46.4v-5.5c0-0.9-0.8-1.7-1.7-1.7h-1.7c-0.9,0-1.7,0.8-1.7,1.7v2.3l-11-6.9V23.4c0-4.7-2-16.1-6.2-16.1  S43.8,19,43.8,23.4v12.9l-11,6.9v-2.3c0-0.9-0.8-1.7-1.7-1.7h-1.7c-0.9,0-1.7,0.8-1.7,1.7v5.5L6.6,59.6c-0.9,0.6-1.5,1.5-1.6,2.6  c-0.2,2.3,2,4.1,4.2,3.5l34.5-9.2v12.9c0,2.8,0.2,5.5,0.6,8.2l-12,9.6c-0.5,0.4-0.8,0.9-0.9,1.4c-0.3,1.6,1.2,3,2.8,2.5l12.6-3.8  c0.5,1.4,1.1,2.9,1.7,4.3c0.3,0.6,0.8,0.9,1.4,0.9s1.2-0.4,1.4-0.9c0.6-1.4,1.2-2.8,1.7-4.3l12.6,3.8c1.6,0.5,3.1-0.9,2.8-2.5  c-0.1-0.6-0.4-1.1-0.9-1.4l-12-9.6c0.4-2.7,0.6-5.5,0.6-8.2V56.6l34.5,9.2c2.2,0.6,4.4-1.2,4.2-3.5C94.9,61.2,94.3,60.2,93.4,59.6z"/></g></svg>`;
-                    const img = new Image();
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, width, height);
-                        state.map.addImage('plane-icon', ctx.getImageData(0,0,width,height));
+                    // Helper to load SVG
+                    const loadIcon = (name, svg) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width; canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.imageSmoothingEnabled = false;
+                            ctx.drawImage(img, 0, 0, width, height);
+                            state.map.addImage(name, ctx.getImageData(0,0,width,height));
+                        };
+                        img.src = 'data:image/svg+xml;base64,' + btoa(svg);
                     };
-                    img.onerror = () => console.error('Failed to load plane icon');
-                    img.src = 'data:image/svg+xml;base64,' + btoa(planeSVG);
-                    
-                    const heliSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-42.35 -84.7 931.7 1143.45"><g transform="rotate(0 423.5 487)"><path fill="#56555e" d="M662 55l-125 125c-36,-185 -188,-171 -217,11l-136 -136c-19,-19 -46,8 -26,27l158 159c0,45 8,91 29,131l-187 188c-20,19 7,46 26,27l183 -182c7,9 16,16 25,21l0 253 -115 77 0 44 121 -54 64 0 120 54 0 -44 -114 -77 0 -253c6,-4 13,-9 19,-15l175 176c19,19 46,-8 27,-27l-179 -179c26,-45 35,-101 33,-152l146 -147c19,-19 -8,-46 -27,-27z"/></g></svg>`;
 
-                    const heliImg = new Image();
-                    heliImg.onload = () => {
-                        const heliCanvas = document.createElement('canvas');
-                        heliCanvas.width = width; 
-                        heliCanvas.height = height;
-                        const heliCtx = heliCanvas.getContext('2d');
-                        heliCtx.imageSmoothingEnabled = false;
-                        heliCtx.drawImage(heliImg, 0, 0, width, height);
-                        state.map.addImage('heli-icon', heliCtx.getImageData(0,0,width,height));
-                    };
-                    heliImg.onerror = () => console.error('Failed to load helicopter icon');
-                    heliImg.src = 'data:image/svg+xml;base64,' + btoa(heliSVG);
+                    // JET (Standard)
+                    loadIcon('plane-jet', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -10 110 135"><path fill="#56555e" d="m44.6 80.1c-0.3-4.7-0.6-13.2-1-20.5-0-0.6-0.3-1.2-0.9-1.6-0.5-0.4-1.2-0.5-1.8-0.4-7.4 1.8-28.1 6.8-28.1 6.8-0.5 0.1-1.1 0-1.5-0.3-0.4-0.3-0.7-0.8-0.7-1.4v-3.7c0-1.7 0.9-3.3 2.4-4.2 0 0 18.3-10.2 26.2-14.7 2.2-1.2 3.5-3.5 3.5-6-0.1-8 0.2-13.4 1-18 0.1-0.3 0.2-0.7 0.3-1 0 0 2.4-9 5.5-9s5.5 9 5.5 9c0.1 0.3 0.2 0.7 0.3 1 0.8 4.6 1 10 1 18-0 2.5 1.3 4.8 3.5 6 7.9 4.4 26.2 14.7 26.2 14.7 1.5 0.8 2.4 2.4 2.4 4.2v3.7c0 0.5-0.2 1-0.7 1.4-0.4 0.3-1 0.4-1.5 0.3 0 0-20.7-5-28.1-6.8-0.6-0.2-1.3 0-1.8 0.4-0.5 0.4-0.8 1-0.9 1.6-0.3 7.3-0.7 15.9-1 20.5l11.1 7.3c0.4 0.3 0.7 0.7 0.8 1.1l0.4 2c0.1 0.3-0 0.6-0.3 0.9-0.2 0.2-0.5 0.3-0.8 0.3l-12.7-1.8c-0.1 0.2-0.3 0.5-0.5 0.7l-1.7 2.4c-0.3 0.5-0.8 0.7-1.4 0.7-0.1 0-0.2-0-0.3-0s-0.2 0-0.3 0c-0.6 0-1.1-0.3-1.4-0.7l-1.7-2.4c-0.2-0.2-0.3-0.5-0.5-0.7l-12.7 1.8c-0.3 0-0.6-0.1-0.8-0.3-0.2-0.2-0.3-0.5-0.3-0.9l0.4-2c0.1-0.5 0.4-0.9 0.8-1.1l11.1-7.3z"/></svg>`);
+                    
+                    // FIGHTER (Delta Wing)
+                    loadIcon('plane-fighter', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#56555e" d="M50 5 L60 30 L95 70 L95 80 L60 60 L60 85 L70 95 L30 95 L40 85 L40 60 L5 80 L5 70 L40 30 Z"/></svg>`);
 
-                    // --- 2. INFO BOX ICON (PRE-INVERTED FOR FILTER) ---
-                    const tW=100, tH=60;
-                    const tCan = document.createElement('canvas');
-                    tCan.width = tW; tCan.height = tH;
-                    const tCtx = tCan.getContext('2d');
-                    
-                    tCtx.beginPath(); tCtx.moveTo(50,0); tCtx.lineTo(50,20);
-                    tCtx.strokeStyle='#573da9';
-                    tCtx.lineWidth=2; tCtx.stroke();
-                    
-                    tCtx.fillStyle='rgba(245,245,235,0.95)';
-                    tCtx.strokeStyle='#573da9';
-                    tCtx.lineWidth=1.5;
-                    const x=5, y=20, w=90, h=35, r=4;
-                    tCtx.beginPath();
-                    tCtx.moveTo(x+r, y); tCtx.arcTo(x+w, y, x+w, y+h, r);
-                    tCtx.arcTo(x+w, y+h, x, y+h, r); tCtx.arcTo(x, y+h, x, y, r);
-                    tCtx.arcTo(x, y, x+w, y, r); tCtx.closePath();
-                    tCtx.fill(); tCtx.stroke();
+                    // HEAVY (Wide body, 4 engines)
+                    loadIcon('plane-heavy', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 120 120"><path fill="#56555e" d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487  l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224  c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839  c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674  L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545  L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/></svg>`);
+
+                    // PROP (Straight Wing)
+                    loadIcon('plane-prop', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="#56555e" d="M96.5,32.5c-0.2-0.9-3.2-0.7-4.1-0.8c-1-0.1-22.5-0.6-22.5-0.6l-15.1,0.5c0,0-0.1-8-0.8-9.9c-0.5-1.3-0.9-2.2-2.2-2.1 l-0.2,0c-0.4-1.8-1.2-3-1.6-3s-1.2,1.3-1.6,3l-0.2,0c-1.3-0.1-1.7,0.8-2.2,2.1c-0.7,1.8-0.8,9.9-0.8,9.9l-15.1-0.5 c0,0-21.4,0.6-22.5,0.6c-1,0.1-3.9-0.1-4.1,0.8c-0.3,1.2-0.1,4.6-0.1,5.9c0,0.9,0,3.6,0,3.6h2l24.7,4.4L45.7,47h0.1L48,69.8 c0,0-9.7,1-10.4,1c-0.8,0.1-1.3,0.2-1.6,0.4c-0.3,0.2-0.5,0.5-0.6,0.8c-0.1,0.3,0.1,3.6,0.1,4c0,0.4,0.2,0.9,0.6,1.3 c0.4,0.4,0.9,0.8,1.7,0.9c0.8,0.1,9.4,1.4,9.5,1.4c0.1,0,1.8-3,1.8-3l1,6.9l1-6.9c0,0,1.7,3,1.8,3s8.7-1.3,9.5-1.4 c0.7-0.1,1.3-0.4,1.7-0.9c0.4-0.4,0.6-0.9,0.6-1.3c0-0.4,0.2-3.7,0.1-4c-0.1-0.3-0.3-0.6-0.6-0.8c-0.3-0.2-0.8-0.4-1.6-0.5 C61.6,70.8,52,69.7,52,69.7l2.4-22.9l15.4-0.5L94.5,42h2c0,0,0-2.7,0-3.6C96.6,37.1,96.7,33.7,96.5,32.5z"/></svg>`);
+
+                    // HELI (Rotors)
+                    loadIcon('heli-icon', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-42.35 -84.7 931.7 1143.45"><g transform="rotate(0 423.5 487)"><path fill="#56555e" d="M662 55l-125 125c-36,-185 -188,-171 -217,11l-136 -136c-19,-19 -46,8 -26,27l158 159c0,45 8,91 29,131l-187 188c-20,19 7,46 26,27l183 -182c7,9 16,16 25,21l0 253 -115 77 0 44 121 -54 64 0 120 54 0 -44 -114 -77 0 -253c6,-4 13,-9 19,-15l175 176c19,19 46,-8 27,-27l-179 -179c26,-45 35,-101 33,-152l146 -147c19,-19 -8,-46 -27,-27z"/></g></svg>`);
+
+                    // INFO BOX ICON
+                    const tW=100, tH=60; const tCan = document.createElement('canvas'); tCan.width = tW; tCan.height = tH; const tCtx = tCan.getContext('2d');
+                    tCtx.beginPath(); tCtx.moveTo(50,0); tCtx.lineTo(50,20); tCtx.strokeStyle='#573da9'; tCtx.lineWidth=2; tCtx.stroke();
+                    tCtx.fillStyle='rgba(245,245,235,0.95)'; tCtx.strokeStyle='#573da9'; tCtx.lineWidth=1.5; const x=5, y=20, w=90, h=35, r=4;
+                    tCtx.beginPath(); tCtx.moveTo(x+r, y); tCtx.arcTo(x+w, y, x+w, y+h, r); tCtx.arcTo(x+w, y+h, x, y+h, r); tCtx.arcTo(x, y+h, x, y, r); tCtx.arcTo(x, y, x+w, y, r); tCtx.closePath(); tCtx.fill(); tCtx.stroke();
                     state.map.addImage('tag-bg', tCtx.getImageData(0,0,tW,tH));
                     
-                    // --- LAYERS ---
                     state.map.addSource('planes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
                     state.map.addSource('flight-paths', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
 
                     state.map.addLayer({
                         'id': 'flight-paths-layer', 'type': 'line', 'source': 'flight-paths',
                         'layout': { 'line-join': 'round', 'line-cap': 'round' },
-                        'paint': { 
-                            'line-color': '#56555e',
-                            'line-width': 1, 
-                            'line-opacity': 0.7, 
-                            'line-dasharray': [2, 8] 
-                        }
+                        'paint': { 'line-color': '#56555e', 'line-width': 2, 'line-opacity': 0.7, 'line-dasharray': [2, 6] } // Thicker, more frequent dots
                     });
 
                     state.map.addLayer({
                         'id': 'planes-layer', 'type': 'symbol', 'source': 'planes',
                         'layout': {
-                            'icon-image': [
-                                'case',
-                                ['==', ['get', 'category'], 'heli'], 'heli-icon',
-                                'plane-icon'
-                            ],
+                            // --- 3. USE DYNAMIC ICON PROPERTY ---
+                            'icon-image': ['get', 'icon'], 
                             'icon-size': [
                                 'interpolate', ['linear'], ['zoom'],
-                                9, ['max', 0.5, ['*', ['/', 3, state.radius], 0.7]],
-                                11, ['max', 0.6, ['*', ['/', 3, state.radius], 0.8]],
-                                13, ['max', 0.7, ['*', ['/', 3, state.radius], 0.9]]
+                                9, ['max', 0.7, ['*', ['/', 3, state.radius], 0.9]], // Bigger!
+                                11, ['max', 0.9, ['*', ['/', 3, state.radius], 1.1]],
+                                13, ['max', 1.1, ['*', ['/', 3, state.radius], 1.3]]
                             ],
                             'icon-allow-overlap': true, 'icon-ignore-placement': true,
-                            'icon-rotate': ['get', 'rotation'],
-                            'icon-rotation-alignment': 'map'
+                            'icon-rotate': ['get', 'rotation'], 'icon-rotation-alignment': 'map'
                         },
-                        'paint': {
-                            'icon-opacity': 0.9
-                        }
+                        'paint': { 'icon-opacity': 0.95 }
                     });
 
                     state.map.addLayer({
@@ -1083,43 +707,23 @@
                         'layout': {
                             'icon-image': 'tag-bg', 'icon-anchor': 'top', 'icon-offset': [0, 0],
                             'icon-allow-overlap': true, 'icon-ignore-placement': true,
-                            'text-field': [
-                                'format',
-                                ['get', 'callsign'], { 'font-scale': 0.8 }, '\n',
-                                ['get', 'desc'], { 'font-scale': 0.7, 'text-color': '#573da9' }
-                            ],
+                            'text-field': [ 'format', ['get', 'callsign'], { 'font-scale': 0.9 }, '\n', ['get', 'desc'], { 'font-scale': 0.8, 'text-color': '#573da9' } ],
                             'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                            'text-anchor': 'top', 'text-offset': [0, 2.2],
-                            'text-color': '#0e0716',
-                            'text-allow-overlap': true, 'text-ignore-placement': true
+                            'text-anchor': 'top', 'text-offset': [0, 2.2], 'text-color': '#0e0716', 'text-allow-overlap': true, 'text-ignore-placement': true
                         }
                     });
 
-                    state.map.on('click', 'planes-layer', (e) => {
-                        if (e.features.length > 0) selectTarget(e.features[0].properties.hex);
-                    });
-                    state.map.on('click', 'info-tags', (e) => {
-                        if (e.features.length > 0) selectTarget(e.features[0].properties.hex);
-                    });
+                    const clickHandler = (e) => { if (e.features.length > 0) selectTarget(e.features[0].properties.hex); };
+                    state.map.on('click', 'planes-layer', clickHandler);
+                    state.map.on('click', 'info-tags', clickHandler);
                     state.map.on('mouseenter', 'planes-layer', () => { state.map.getCanvas().style.cursor = 'pointer'; });
                     state.map.on('mouseleave', 'planes-layer', () => { state.map.getCanvas().style.cursor = ''; });
                 });
 
                 const el = document.createElement('div');
-                el.className = 'user-marker';
-                el.style.cursor = 'pointer';
-                el.onclick = () => {
-                    if (state.map) {
-                        state.map.flyTo({ 
-                            center: [state.lon, state.lat], 
-                            zoom: getZoomForRadius(state.radius),
-                            speed: CONFIG.FLY_SPEED
-                        });
-                    }
-                };
-                state.userMarker = new maplibregl.Marker({ element: el })
-                    .setLngLat([state.lon, state.lat])
-                    .addTo(state.map);
+                el.className = 'user-marker'; el.style.cursor = 'pointer';
+                el.onclick = () => { if (state.map) { state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: CONFIG.FLY_SPEED }); } };
+                state.userMarker = new maplibregl.Marker({ element: el }).setLngLat([state.lon, state.lat]).addTo(state.map);
 
             } catch (e) { console.error(e); }
         }
@@ -1128,55 +732,42 @@
             if (!state.lat) return;
             try {
                 const url = `${CONFIG.API_PLANES}${state.lat}/${state.lon}/${state.radius}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                const now = Date.now();
-                const activeHexes = new Set();
+                const res = await fetch(url); const data = await res.json();
+                const now = Date.now(); const activeHexes = new Set();
 
                 if (data.ac) {
                     data.ac.forEach(p => {
                         if (!p.lat || !p.lon) return;
                         activeHexes.add(p.hex);
-                        
                         const isNewContact = !state.planesData.has(p.hex);
                         let pData = state.planesData.get(p.hex);
-                        
                         const speedKmh = (p.gs || 0) * CONFIG.KNOTS_TO_KMH;
                         const distanceIn5s = speedKmh * (CONFIG.PROJECTION_OFFSET / 3600); 
                         const projected = getProjectedPoint(p.lat, p.lon, p.track || 0, distanceIn5s);
 
                         if (pData) {
-                            pData.startLat = pData.currentLat;
-                            pData.startLon = pData.currentLon;
-                            pData.targetLat = projected[1];
-                            pData.targetLon = projected[0];
-                            pData.startTime = now;
-                            pData.alt_baro = p.alt_baro;
-                            pData.gs = p.gs;
+                            pData.startLat = pData.currentLat; pData.startLon = pData.currentLon;
+                            pData.targetLat = projected[1]; pData.targetLon = projected[0];
+                            pData.startTime = now; pData.alt_baro = p.alt_baro; pData.gs = p.gs;
                             pData.track = p.track !== undefined ? p.track : pData.track;
-                            pData.flight = p.flight;
-                            pData.t = p.t;
-                            pData.baro_rate = p.baro_rate;
+                            pData.flight = p.flight; pData.t = p.t; pData.baro_rate = p.baro_rate;
+                            pData.category = p.category; // Ensure category is saved
                         } else {
                             pData = {
-                                ...p,
-                                currentLat: p.lat, currentLon: p.lon,
+                                ...p, currentLat: p.lat, currentLon: p.lon,
                                 startLat: p.lat, startLon: p.lon,
                                 targetLat: projected[1], targetLon: projected[0],
                                 startTime: now
                             };
                             state.planesData.set(p.hex, pData);
                         }
-                        
                         if (isNewContact && state.autoAnnounce && !state.announcedPlanes.has(p.hex)) {
                             state.announcedPlanes.add(p.hex);
                             const phase = getFlightPhase(pData);
                             announceNewContact(pData, phase);
                         }
                     });
-
                     DOM.planeCount.textContent = `${activeHexes.size} ACTIVE AIRCRAFT`;
-
                     for (let [hex, data] of state.planesData) {
                         if (!activeHexes.has(hex)) {
                             state.planesData.delete(hex);
@@ -1189,19 +780,11 @@
         }
 
         function animatePlanes() {
-            if (!state.map || !state.map.getSource('planes')) {
-                requestAnimationFrame(animatePlanes);
-                return;
-            }
-            
-            if (state.planesData.size === 0) {
-                requestAnimationFrame(animatePlanes);
-                return;
-            }
+            if (!state.map || !state.map.getSource('planes')) { requestAnimationFrame(animatePlanes); return; }
+            if (state.planesData.size === 0) { requestAnimationFrame(animatePlanes); return; }
 
             const now = Date.now();
-            const planeFeatures = [];
-            const pathFeatures = [];
+            const planeFeatures = []; const pathFeatures = [];
 
             state.planesData.forEach((p, hex) => {
                 const elapsed = now - p.startTime;
@@ -1216,17 +799,16 @@
                 const spd = Math.round(p.gs || 0);
                 const desc = `${alt}ft ${spd}kt`;
 
-                const isHeli = p.category === 'A7' || p.category === 'A1';
+                // --- 4. CALCULATE ICON TYPE FOR FEATURE ---
+                const iconType = getIconType(p.t, p.category);
                 
                 planeFeatures.push({
                     'type': 'Feature',
                     'geometry': { 'type': 'Point', 'coordinates': [p.currentLon, p.currentLat] },
                     'properties': { 
-                        'hex': hex, 
-                        'rotation': p.track || 0,
-                        'callsign': callsign,
-                        'desc': desc,
-                        'category': isHeli ? 'heli' : 'plane'
+                        'hex': hex, 'rotation': p.track || 0,
+                        'callsign': callsign, 'desc': desc,
+                        'icon': iconType // Pass the calculated icon name
                     }
                 });
 
@@ -1234,16 +816,8 @@
                     const speedKmh = (p.gs || 0) * CONFIG.KNOTS_TO_KMH;
                     const dist2Min = speedKmh * (CONFIG.PROJECTION_MINUTES / 60); 
                     const futurePos = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, dist2Min);
-                    
-                    pathFeatures.push({
-                        'type': 'Feature',
-                        'geometry': {
-                            'type': 'LineString',
-                            'coordinates': [[p.currentLon, p.currentLat], [futurePos[0], futurePos[1]]]
-                        }
-                    });
+                    pathFeatures.push({ 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[p.currentLon, p.currentLat], [futurePos[0], futurePos[1]]] } });
                 }
-
                 if (state.selectedHex === hex) {
                     const dist = calcDist(state.lat, state.lon, p.currentLat, p.currentLon);
                     DOM.tDist.textContent = dist.toFixed(2);
@@ -1252,13 +826,11 @@
 
             state.map.getSource('planes').setData({ 'type': 'FeatureCollection', 'features': planeFeatures });
             state.map.getSource('flight-paths').setData({ 'type': 'FeatureCollection', 'features': pathFeatures });
-
             requestAnimationFrame(animatePlanes);
         }
 
         function selectTarget(hex) {
-            const p = state.planesData.get(hex);
-            if(!p) return;
+            const p = state.planesData.get(hex); if(!p) return;
             state.selectedHex = hex;
             DOM.targetCard.classList.add('active');
             if(state.map) state.map.flyTo({ center: [p.currentLon, p.currentLat], zoom: CONFIG.TARGET_ZOOM, speed: CONFIG.FLY_SPEED });
@@ -1267,10 +839,8 @@
             DOM.tAlt.textContent = p.alt_baro === 'ground' ? 'GND' : p.alt_baro;
             DOM.tSpd.textContent = Math.round(p.gs || 0);
             DOM.tHdg.textContent = Math.round(p.track || 0).toString().padStart(3,'0');
-            
             const phase = getFlightPhase(p);
             DOM.tPhase.textContent = phase;
-
             announce(p, phase);
         }
 
@@ -1288,54 +858,23 @@
             return 'CRUISING';
         }
 
-        function speak(text) {
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(text);
-            u.rate = 0.9;
-            window.speechSynthesis.speak(u);
-        }
-
-        function announce(p, phase) {
-            const call = (p.flight || "Target").split('').join(' ');
-            const dist = Math.round(calcDist(state.lat, state.lon, p.currentLat, p.currentLon));
-            const type = getAircraftTypeName(p.t);
-            speak(`${type}. Callsign ${call}. ${dist} miles. ${phase}.`);
-        }
-
-        function announceNewContact(p, phase) {
-            const call = p.flight ? p.flight.trim() : "Unknown";
-            const dist = Math.round(calcDist(state.lat, state.lon, p.currentLat, p.currentLon));
-            const type = getAircraftTypeName(p.t);
-            speak(`New contact. ${type}. Callsign ${call}. ${dist} miles. ${phase}.`);
-        }
+        function speak(text) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = 0.9; window.speechSynthesis.speak(u); }
+        function announce(p, phase) { const call = (p.flight || "Target").split('').join(' '); const dist = Math.round(calcDist(state.lat, state.lon, p.currentLat, p.currentLon)); const type = getAircraftTypeName(p.t); speak(`${type}. Callsign ${call}. ${dist} miles. ${phase}.`); }
+        function announceNewContact(p, phase) { const call = p.flight ? p.flight.trim() : "Unknown"; const dist = Math.round(calcDist(state.lat, state.lon, p.currentLat, p.currentLon)); const type = getAircraftTypeName(p.t); speak(`New contact. ${type}. Callsign ${call}. ${dist} miles. ${phase}.`); }
 
         function updateWeather(force = false) {
             if (!state.lat || !state.lon) return;
-            
             const now = Date.now();
-            const timeSinceLastUpdate = now - state.lastWxUpdate;
-            const fifteenMinutes = CONFIG.WX_POLL_MS;
-            
-            if (!force && timeSinceLastUpdate < fifteenMinutes) {
-                return;
-            }
-            
+            if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
             state.lastWxUpdate = now;
-            
-            fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`)
-                .then(r => r.json())
-                .then(d => fetch(d.properties.observationStations))
-                .then(r => r.json())
-                .then(d => fetch(d.features[0].id + '/observations/latest'))
-                .then(r => r.json())
-                .then(d => {
-                    const p = d.properties;
-                    const tempF = Math.round((p.temperature.value * 9/5) + 32);
-                    const wind = Math.round(p.windSpeed.value * 0.539957);
-                    DOM.wxTemp.textContent = `${tempF}°`;
-                    DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase();
-                    DOM.wxWind.textContent = wind;
-                }).catch(e => console.log("WX Error"));
+            fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`).then(r => r.json()).then(d => fetch(d.properties.observationStations)).then(r => r.json()).then(d => fetch(d.features[0].id + '/observations/latest')).then(r => r.json()).then(d => {
+                const p = d.properties;
+                const tempF = Math.round((p.temperature.value * 9/5) + 32);
+                const wind = Math.round(p.windSpeed.value * 0.539957);
+                DOM.wxTemp.textContent = `${tempF}°`;
+                DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase();
+                DOM.wxWind.textContent = wind;
+            }).catch(e => console.log("WX Error"));
         }
 
         function selectLocationSource(source) {
@@ -1344,207 +883,80 @@
             document.getElementById('optLAX').classList.remove('selected');
             document.getElementById('optGEG').classList.remove('selected');
             document.getElementById('optATL').classList.remove('selected');
-            
             document.getElementById('opt' + (source === 'geo' ? 'Geo' : source)).classList.add('selected');
             if (source === 'geo') {
-                state.useGeo = true;
-                state.selectedAirport = null;
-                
+                state.useGeo = true; state.selectedAirport = null;
                 if (state.lastKnownGeo) {
-                    state.lat = state.lastKnownGeo.lat;
-                    state.lon = state.lastKnownGeo.lon;
-                    DOM.geoLoc.textContent = `${state.lat.toFixed(CONFIG.LAT_LON_DECIMALS)} N / ${state.lon.toFixed(CONFIG.LAT_LON_DECIMALS)} W`;
-                    
-                    if (state.map) {
-                        state.map.flyTo({ 
-                            center: [state.lon, state.lat], 
-                            zoom: getZoomForRadius(state.radius),
-                            speed: CONFIG.FLY_SPEED
-                        });
-                        if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]);
-                    }
-                    updateWeather(true);
-                    fetchPlanes();
-                } else {
-                    DOM.geoLoc.textContent = 'ACQUIRING GEO...';
-                }
-                
+                    state.lat = state.lastKnownGeo.lat; state.lon = state.lastKnownGeo.lon;
+                    DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°N`; DOM.statusDisplay.textContent = `${Math.abs(state.lon).toFixed(2)}°W`;
+                    if (state.map) { state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: CONFIG.FLY_SPEED }); if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]); }
+                    updateWeather(true); fetchPlanes();
+                } else { DOM.locationDisplay.textContent = 'ACQUIRING'; }
                 if (!state.watchId && navigator.geolocation) {
                     DOM.geoLoc.classList.add('searching');
-                    state.watchId = navigator.geolocation.watchPosition(
-                        (pos) => {
-                            DOM.geoLoc.classList.remove('searching');
-                            state.lastKnownGeo = {
-                                lat: pos.coords.latitude,
-                                lon: pos.coords.longitude
-                            };
-                            if (state.useGeo) {
-                                state.lat = pos.coords.latitude;
-                                state.lon = pos.coords.longitude;
-                                DOM.geoLoc.textContent = `${state.lat.toFixed(CONFIG.LAT_LON_DECIMALS)} N / ${state.lon.toFixed(CONFIG.LAT_LON_DECIMALS)} W`;
-                                
-                                if (state.map) {
-                                    state.map.setCenter([state.lon, state.lat]);
-                                    if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]);
-                                }
-                                updateWeather();
-                                fetchPlanes();
-                            }
-                        },
-                        (err) => { DOM.geoLoc.textContent = "RETRYING"; },
-                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                    );
+                    state.watchId = navigator.geolocation.watchPosition((pos) => {
+                        DOM.geoLoc.classList.remove('searching');
+                        state.lastKnownGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                        if (state.useGeo) {
+                            state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
+                            DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°N`; DOM.statusDisplay.textContent = `${Math.abs(state.lon).toFixed(2)}°W`;
+                            if (state.map) { state.map.setCenter([state.lon, state.lat]); if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]); }
+                            updateWeather(); fetchPlanes();
+                        }
+                    }, (err) => { DOM.locationDisplay.textContent = "RETRYING"; }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
                 }
             } else {
-                state.useGeo = false;
-                state.selectedAirport = source;
-                
-                if (state.watchId) {
-                    navigator.geolocation.clearWatch(state.watchId);
-                    state.watchId = null;
-                    DOM.geoLoc.classList.remove('searching');
-                }
+                state.useGeo = false; state.selectedAirport = source;
+                if (state.watchId) { navigator.geolocation.clearWatch(state.watchId); state.watchId = null; DOM.geoLoc.classList.remove('searching'); }
                 const airport = CONFIG.LOCATIONS[source];
-                state.lat = airport.lat;
-                state.lon = airport.lon;
-                DOM.geoLoc.textContent = airport.name;
-                
+                state.lat = airport.lat; state.lon = airport.lon;
+                DOM.locationDisplay.textContent = airport.name; DOM.statusDisplay.textContent = "ACTIVE";
                 updateWeather(true);
-                
-                if (state.map) {
-                    state.map.flyTo({ 
-                        center: [state.lon, state.lat], 
-                        zoom: getZoomForRadius(state.radius),
-                        speed: CONFIG.FLY_SPEED
-                    });
-                    if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]);
-                }
+                if (state.map) { state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: CONFIG.FLY_SPEED }); if (state.userMarker) state.userMarker.setLngLat([state.lon, state.lat]); }
                 fetchPlanes();
             }
         }
         
         function selectRadius(r) {
             state.radius = r;
-            document.getElementById('chipR3')?.classList.remove('selected');
-            document.getElementById('chipR5')?.classList.remove('selected');
-            document.getElementById('chipR10')?.classList.remove('selected');
-            document.getElementById('chipR20')?.classList.remove('selected');
-            
+            document.getElementById('chipR3')?.classList.remove('selected'); document.getElementById('chipR5')?.classList.remove('selected');
+            document.getElementById('chipR10')?.classList.remove('selected'); document.getElementById('chipR20')?.classList.remove('selected');
             document.getElementById('chipR' + r)?.classList.add('selected');
-            
             const scaleFactor = Math.max(3 / r, 0.6); 
-
             if (state.map && state.map.getLayer('planes-layer')) {
                 state.map.setLayoutProperty('planes-layer', 'icon-size', [
                     'interpolate', ['linear'], ['zoom'],
-                    9, ['max', 0.5, scaleFactor * 0.7],
-                    11, ['max', 0.6, scaleFactor * 0.8],
-                    13, ['max', 0.7, scaleFactor * 0.9]
+                    9, ['max', 0.7, scaleFactor * 0.9],
+                    11, ['max', 0.9, scaleFactor * 1.1],
+                    13, ['max', 1.1, scaleFactor * 1.3]
                 ]);
             }
-            
-            fetchPlanes();
-            if(state.map) state.map.setZoom(getZoomForRadius(r));
+            fetchPlanes(); if(state.map) state.map.setZoom(getZoomForRadius(r));
         }
         
+		
         function toggleRadar() {
-            state.radarEnabled = !state.radarEnabled;
-            DOM.radarToggle.classList.toggle('active');
-            
-            if (state.map && state.map.getLayer('radar-layer')) {
-                state.map.setLayoutProperty(
-                    'radar-layer',
-                    'visibility',
-                    state.radarEnabled ? 'visible' : 'none'
-                );
-            }
+            state.radarEnabled = !state.radarEnabled; DOM.radarToggle.classList.toggle('active');
+            if (state.map && state.map.getLayer('radar-layer')) { state.map.setLayoutProperty('radar-layer', 'visibility', state.radarEnabled ? 'visible' : 'none'); }
         }
-        
-        function toggleAutoAnnounce() {
-            state.autoAnnounce = !state.autoAnnounce;
-            DOM.announceToggle.classList.toggle('active');
-            
-            if (state.autoAnnounce) {
-                speak("Auto announce enabled.");
-            }
-        }
-        
-        function cycleTheme() {
-            const themeOrder = ['lite', 'ranger', 'shadow'];
-            const currentIndex = themeOrder.indexOf(state.theme);
-            const nextIndex = (currentIndex + 1) % themeOrder.length;
-            const newTheme = themeOrder[nextIndex];
-            
-            applyTheme(newTheme);
-        }
-        
+        function toggleAutoAnnounce() { state.autoAnnounce = !state.autoAnnounce; DOM.announceToggle.classList.toggle('active'); if (state.autoAnnounce) { speak("Auto announce enabled."); } }
+        function cycleTheme() { const themeOrder = ['lite', 'ranger', 'shadow']; const currentIndex = themeOrder.indexOf(state.theme); const nextIndex = (currentIndex + 1) % themeOrder.length; applyTheme(themeOrder[nextIndex]); }
         function applyTheme(themeName) {
-            state.theme = themeName;
-            const theme = CONFIG.THEMES[themeName];
-            
-            DOM.themeName.textContent = theme.name;
-            
-            document.documentElement.style.setProperty('--theme-primary', theme.primary);
-            document.documentElement.style.setProperty('--theme-text', theme.text);
-            document.documentElement.style.setProperty('--theme-text-secondary', theme.textSecondary);
-            document.documentElement.style.setProperty('--theme-bg', theme.bg);
-            document.documentElement.style.setProperty('--theme-bg-alt', theme.bgAlt);
-            document.documentElement.style.setProperty('--theme-border', theme.border);
-            document.documentElement.style.setProperty('--theme-plane-color', theme.planeColor);
-            document.documentElement.style.setProperty('--theme-map-filter', theme.mapFilter);
+            state.theme = themeName; const theme = CONFIG.THEMES[themeName]; DOM.themeName.textContent = theme.name;
+            document.documentElement.style.setProperty('--theme-primary', theme.primary); document.documentElement.style.setProperty('--theme-text', theme.text);
+            document.documentElement.style.setProperty('--theme-text-secondary', theme.textSecondary); document.documentElement.style.setProperty('--theme-bg', theme.bg);
+            document.documentElement.style.setProperty('--theme-bg-alt', theme.bgAlt); document.documentElement.style.setProperty('--theme-border', theme.border);
+            document.documentElement.style.setProperty('--theme-plane-color', theme.planeColor); document.documentElement.style.setProperty('--theme-map-filter', theme.mapFilter);
             document.documentElement.style.setProperty('--theme-body-bg', theme.bodyBg);
-            
-            if (state.map) {
-                const canvas = document.querySelector('.maplibregl-canvas');
-                if (canvas) {
-                    canvas.style.filter = theme.mapFilter;
-                }
-                if (state.map.getLayer('flight-paths-layer')) {
-                    state.map.setPaintProperty('flight-paths-layer', 'line-color', theme.planeColor);
-                }
-            }
+            if (state.map) { const canvas = document.querySelector('.maplibregl-canvas'); if (canvas) { canvas.style.filter = theme.mapFilter; } if (state.map.getLayer('flight-paths-layer')) { state.map.setPaintProperty('flight-paths-layer', 'line-color', theme.planeColor); } }
         }
-        
-        function toggleSettings() { 
-            DOM.settingsPanel.classList.toggle('open'); 
-            DOM.settingsOverlay.classList.toggle('open');
-        }
-        
-        function getZoomForRadius(r) { 
-            if(r<=3) return 13; 
-            if(r<=5) return 12; 
-            if(r<=10) return 11;
-            if(r<=20) return 10;
-            return 9; 
-        }
-        
-        function getProjectedPoint(lat, lon, bear, distKm) {
-            const R = 6371; 
-            const d = distKm / R;
-            const rLat = lat * Math.PI / 180;
-            const rLon = lon * Math.PI / 180;
-            const rBear = bear * Math.PI / 180;
-            const nLat = Math.asin(Math.sin(rLat) * Math.cos(d) + Math.cos(rLat) * Math.sin(d) * Math.cos(rBear));
-            const nLon = rLon + Math.atan2(Math.sin(rBear) * Math.sin(d) * Math.cos(rLat), Math.cos(d) - Math.sin(rLat) * Math.sin(nLat));
-            return [nLon * 180 / Math.PI, nLat * 180 / Math.PI];
-        }
-        function calcDist(lat1, lon1, lat2, lon2) {
-            const R = 3958.8;
-            const dLat = (lat2-lat1)*Math.PI/180;
-            const dLon = (lon2-lon1)*Math.PI/180;
-            const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
+        function toggleSettings() { DOM.settingsPanel.classList.toggle('open'); DOM.settingsOverlay.classList.toggle('open'); }
+        function getZoomForRadius(r) { if(r<=3) return 13; if(r<=5) return 12; if(r<=10) return 11; if(r<=20) return 10; return 9; }
+        function getProjectedPoint(lat, lon, bear, distKm) { const R = 6371; const d = distKm / R; const rLat = lat * Math.PI / 180; const rLon = lon * Math.PI / 180; const rBear = bear * Math.PI / 180; const nLat = Math.asin(Math.sin(rLat) * Math.cos(d) + Math.cos(rLat) * Math.sin(d) * Math.cos(rBear)); const nLon = rLon + Math.atan2(Math.sin(rBear) * Math.sin(d) * Math.cos(rLat), Math.cos(d) - Math.sin(rLat) * Math.sin(nLat)); return [nLon * 180 / Math.PI, nLat * 180 / Math.PI]; }
+        function calcDist(lat1, lon1, lat2, lon2) { const R = 3958.8; const dLat = (lat2-lat1)*Math.PI/180; const dLon = (lon2-lon1)*Math.PI/180; const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2; return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
 
-        window.addEventListener('beforeunload', () => {
-            if (state.wxInterval) clearInterval(state.wxInterval);
-            if (state.planeInterval) clearInterval(state.planeInterval);
-            if (state.map) state.map.remove();
-        });
-
-        // FORCE THEME ON LOAD
-        applyTheme('shadow');
-        DOM.settingsBtn.onclick = toggleSettings;
+        window.addEventListener('beforeunload', () => { if (state.wxInterval) clearInterval(state.wxInterval); if (state.planeInterval) clearInterval(state.planeInterval); if (state.map) state.map.remove(); });
+        applyTheme('shadow'); DOM.settingsBtn.onclick = toggleSettings; window.onload = startApp;
     </script>
 </body>
 </html>
