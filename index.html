@@ -142,8 +142,9 @@
         .ahrs-crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 240px; height: 80px; z-index: 25; opacity: 0.5; pointer-events: none; transition: transform 0.2s; }
         .ahrs-crosshair svg path, circle { stroke: rgba(255, 255, 255, 0.9); stroke-width: 2; fill: none; }
         
-        .return-btn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: #ff3b30; color: white; border: none; padding: 16px 32px; border-radius: 40px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,0.6); cursor: pointer; z-index: 100; pointer-events: auto; display: flex; align-items: center; gap: 8px; }
-        .return-btn:active { transform: translateX(-50%) scale(0.95); }
+        .return-btn { position: fixed;
+    bottom: calc(max(20px, var(--safe-bottom)) + 220px);  right: clamp(20px, 4vw, 40px); background: #ff3b30; color: white; border: none; padding: 16px 32px; border-radius: 40px; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; box-shadow: 0 4px 20px rgba(0,0,0,0.6); cursor: pointer; z-index: 100; pointer-events: auto; display: flex; align-items: center; gap: 8px; }
+        .return-btn:active { transform: scale(0.9); }
 
         /* === SETTINGS PANEL === */
         .settings-panel { position: fixed; top: 0; right: -400px; width: 400px; max-width: 90vw; height: 100vh; height: 100dvh; background: var(--theme-bg); backdrop-filter: blur(20px); z-index: 300; transition: right 0.3s ease; border-left: 1px solid var(--theme-border); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: var(--safe-top); padding-bottom: max(80px, var(--safe-bottom)); }
@@ -176,6 +177,55 @@
         @keyframes pulse-flight { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
         body.loading { overflow: hidden; pointer-events: none; }
         .app-credit { font-size: 12px; color: var(--theme-text-secondary); margin-top: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
+		.compass-container {
+    position: fixed;
+    top: 100px; /* Below the callsign box */
+    right: 20px; /* Aligned with right edge */
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    /* Glass Effect */
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compass-ring {
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.compass-mark {
+    position: absolute;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* Positioning the N/E/S/W labels */
+.compass-mark.north { top: 0; left: 50%; transform: translateX(-50%); color: #ff3b30; }
+.compass-mark.south { bottom: 0; left: 50%; transform: translateX(-50%); }
+.compass-mark.east  { right: 0; top: 50%; transform: translateY(-50%); }
+.compass-mark.west  { left: 0; top: 50%; transform: translateY(-50%); }
+
+.compass-plane {
+    width: 40px;
+    height: 40px;
+    /* Smooth rotation transition */
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
     </style>
 </head>
 <body class="loading"> 
@@ -249,7 +299,19 @@
             <div class="c-callsign" id="cCallsign">N/A</div>
             <div class="c-type" id="cType">UNKNOWN</div>
         </div>
-
+<div class="compass-container">
+    <div class="compass-ring">
+        <div class="compass-mark north">N</div>
+        <div class="compass-mark east">E</div>
+        <div class="compass-mark south">S</div>
+        <div class="compass-mark west">W</div>
+    </div>
+    <div id="compassPlane" class="compass-plane">
+        <svg viewBox="0 0 24 24" fill="white">
+            <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z" />
+        </svg>
+    </div>
+</div>
         <div class="c-hud-bottom">
             <div class="c-data-block">
                 <div class="c-label">ALTITUDE</div>
@@ -698,80 +760,84 @@
         };
 
         const state = {
-            lat: null, lon: null, radius: 5, 
-            map: null, cockpitMap: null, 
-            planesData: new Map(), 
-            selectedHex: null, mode: 'radar', 
-            wxInterval: null, planeInterval: null, cockpitInterval: null,
-            lastGeoUpdate: 0, lastWxUpdate: 0, lastKnownGeo: null, useGeo: true, 
-            radarEnabled: true, autoAnnounce: false, announcedPlanes: new Set(), theme: 'shadow', watchId: null,
-            isFetchingPlanes: false // ADD: Request deduplication flag
-        };
+    lat: null, lon: null, radius: 5, 
+    map: null, cockpitMap: null, 
+    planesData: new Map(), 
+    selectedHex: null, mode: 'radar', 
+    wxInterval: null, planeInterval: null, cockpitInterval: null,
+    lastGeoUpdate: 0, lastWxUpdate: 0, lastKnownGeo: null, useGeo: true, 
+    radarEnabled: true, autoAnnounce: false, announcedPlanes: new Set(), theme: 'shadow', watchId: null,
+    isFetchingPlanes: false,
+    hasLockedLocation: false,
+    cachedStationUrl: null,
+	lastAnimateTime: 0
+};
 
-        function startApp() {
-            speak("Welcome to Plane Patrol. Acquiring location.");
-            if (!state.map) {
-                state.lat = 39.8; state.lon = -98.5;
-                initMap();
-                if (state.map) { state.map.dragPan.disable(); state.map.scrollZoom.disable(); }
-            }
-            if (navigator.geolocation) {
-                DOM.splashStatus.textContent = "ACQUIRING LOCATION...";
-                
-                // CLEAR any existing watch before creating new one
-                if (state.watchId) {
-                    navigator.geolocation.clearWatch(state.watchId);
-                    state.watchId = null;
-                }
-                
-                state.watchId = navigator.geolocation.watchPosition(
-                    (pos) => {
-                        state.lastKnownGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                        if (state.useGeo) {
-                            const isFirstLock = (state.lat === 39.8 && state.lon === -98.5);
-                            state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
-                            DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°N`;
-                            DOM.statusDisplay.textContent = `${Math.abs(state.lon).toFixed(2)}°W`;
-                            if(isFirstLock) {
-                                DOM.splashStatus.textContent = "LINK ESTABLISHED";
-                                setTimeout(() => {
-                                    DOM.splashScreen.classList.add('hidden');
-                                    document.body.classList.remove('loading');
-                                    speak("Location acquired.");
-                                }, 1000);
-                            }
-                            if (state.map && state.mode === 'radar') {
-                                state.map.dragPan.enable(); state.map.scrollZoom.enable();
-                                if (isFirstLock) {
-                                    state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: 1.5 });
-                                }
-                                updateUserLocation(state.lat, state.lon);
-                            }
-                            
-                            // FIXED: Consolidated interval creation - only create once
-                            if (!state.planeInterval) {
-                                updateWeather(true); 
-                                fetchPlanes();
-                                state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
-                                requestAnimationFrame(animatePlanes);
-                            }
-                            if (!state.wxInterval) {
-                                state.wxInterval = setInterval(() => updateWeather(false), CONFIG.WX_POLL_MS);
-                            }
-                        }
-                    }, 
-                    (err) => { 
-                        DOM.splashStatus.textContent = "GPS SIGNAL LOST. RETRYING..."; 
-                        speak("GPS Signal lost. Please wait."); 
-                    },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                );
-            } else { 
-                DOM.splashStatus.textContent = "GPS NOT SUPPORTED"; 
-                alert("GPS Not Supported"); 
-            }
+function startApp() {
+    speak("Welcome to Plane Patrol. Acquiring location.");
+    if (!state.map) {
+        state.lat = 39.8; state.lon = -98.5;
+        initMap();
+        if (state.map) { state.map.dragPan.disable(); state.map.scrollZoom.disable(); }
+    }
+    if (navigator.geolocation) {
+        DOM.splashStatus.textContent = "ACQUIRING LOCATION...";
+        
+        if (state.watchId) {
+            navigator.geolocation.clearWatch(state.watchId);
+            state.watchId = null;
         }
-
+        
+        state.watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                state.lastKnownGeo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                if (state.useGeo) {
+                    // LOGIC FIX: Check boolean flag instead of coordinates
+                    const isFirstLock = !state.hasLockedLocation;
+                    state.hasLockedLocation = true; // Mark as locked
+                    
+                    state.lat = pos.coords.latitude; state.lon = pos.coords.longitude;
+                    DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°N`;
+                    DOM.statusDisplay.textContent = `${Math.abs(state.lon).toFixed(2)}°W`;
+                    
+                    if(isFirstLock) {
+                        DOM.splashStatus.textContent = "LINK ESTABLISHED";
+                        setTimeout(() => {
+                            DOM.splashScreen.classList.add('hidden');
+                            document.body.classList.remove('loading');
+                            speak("Location acquired.");
+                        }, 1000);
+                    }
+                    if (state.map && state.mode === 'radar') {
+                        state.map.dragPan.enable(); state.map.scrollZoom.enable();
+                        if (isFirstLock) {
+                            state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), speed: 1.5 });
+                        }
+                        updateUserLocation(state.lat, state.lon);
+                    }
+                    
+                    if (!state.planeInterval) {
+                        updateWeather(true); 
+                        fetchPlanes();
+                        state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
+                        requestAnimationFrame(animatePlanes);
+                    }
+                    if (!state.wxInterval) {
+                        state.wxInterval = setInterval(() => updateWeather(false), CONFIG.WX_POLL_MS);
+                    }
+                }
+            }, 
+            (err) => { 
+                DOM.splashStatus.textContent = "GPS SIGNAL LOST. RETRYING..."; 
+                speak("GPS Signal lost. Please wait."); 
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    } else { 
+        DOM.splashStatus.textContent = "GPS NOT SUPPORTED"; 
+        alert("GPS Not Supported"); 
+    }
+}
         function initMap() {
             try {
                 state.map = new maplibregl.Map({
@@ -987,71 +1053,103 @@
             }
         }
 
-        function animatePlanes() {
-            if (state.mode === 'cockpit') { updateCockpitView(); }
-            
-            if (!state.map || !state.map.getSource('planes')) { requestAnimationFrame(animatePlanes); return; }
-            const now = Date.now();
-            const planeFeatures = []; const pathFeatures = [];
+function animatePlanes() {
+    // 1. Stop if backgrounded (Battery Saver)
+    if (document.hidden) {
+        requestAnimationFrame(animatePlanes);
+        return;
+    }
 
-            state.planesData.forEach((p, hex) => {
-                const elapsed = now - p.startTime;
-                let progress = elapsed / CONFIG.ANIMATION_DURATION;
-                if (progress > 1) progress = 1;
+    // 2. FPS Throttling (30 FPS)
+    const now = Date.now();
+    const fps = 30;
+    const interval = 1000 / fps;
+    const delta = now - state.lastAnimateTime;
 
-                p.currentLat = p.startLat + (p.targetLat - p.startLat) * progress;
-                p.currentLon = p.startLon + (p.targetLon - p.startLon) * progress;
+    // If not enough time has passed, skip this frame but keep the loop alive
+    if (delta < interval) {
+        requestAnimationFrame(animatePlanes);
+        return;
+    }
 
-                const callsign = p.flight ? p.flight.trim() : p.hex;
-                const alt = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro / CONFIG.ALTITUDE_ROUNDING) * CONFIG.ALTITUDE_ROUNDING;
-                const spd = Math.round(p.gs || 0);
-                const desc = `${alt}ft ${spd}kt`;
-                const iconType = getIconType(p.t, p.category);
-                
-                planeFeatures.push({
-                    'type': 'Feature',
-                    'geometry': { 'type': 'Point', 'coordinates': [p.currentLon, p.currentLat] },
-                    'properties': { 'hex': hex, 'rotation': p.track || 0, 'callsign': callsign, 'desc': desc, 'icon': iconType }
-                });
+    // Adjust execution time to maintain steady cadence
+    state.lastAnimateTime = now - (delta % interval);
 
-                if (p.alt_baro !== 'ground') {
-                    const speedKmh = (p.gs || 0) * CONFIG.KNOTS_TO_KMH;
-                    const dist2Min = speedKmh * (CONFIG.PROJECTION_MINUTES / 60); 
-                    const futurePos = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, dist2Min);
-                    pathFeatures.push({ 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[p.currentLon, p.currentLat], [futurePos[0], futurePos[1]]] } });
-                }
-            });
+    // --- RENDER LOGIC STARTS HERE ---
 
-            state.map.getSource('planes').setData({ 'type': 'FeatureCollection', 'features': planeFeatures });
-            state.map.getSource('flight-paths').setData({ 'type': 'FeatureCollection', 'features': pathFeatures });
-            requestAnimationFrame(animatePlanes);
+    if (state.mode === 'cockpit') { updateCockpitView(); }
+    
+    if (!state.map || !state.map.getSource('planes')) { 
+        requestAnimationFrame(animatePlanes); 
+        return; 
+    }
+
+    const planeFeatures = []; 
+    const pathFeatures = [];
+
+    state.planesData.forEach((p, hex) => {
+        const elapsed = now - p.startTime;
+        let progress = elapsed / CONFIG.ANIMATION_DURATION;
+        if (progress > 1) progress = 1;
+
+        p.currentLat = p.startLat + (p.targetLat - p.startLat) * progress;
+        p.currentLon = p.startLon + (p.targetLon - p.startLon) * progress;
+
+        const callsign = p.flight ? p.flight.trim() : p.hex;
+        const alt = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro / CONFIG.ALTITUDE_ROUNDING) * CONFIG.ALTITUDE_ROUNDING;
+        const spd = Math.round(p.gs || 0);
+        const desc = `${alt}ft ${spd}kt`;
+        const iconType = getIconType(p.t, p.category);
+        
+        planeFeatures.push({
+            'type': 'Feature',
+            'geometry': { 'type': 'Point', 'coordinates': [p.currentLon, p.currentLat] },
+            'properties': { 'hex': hex, 'rotation': p.track || 0, 'callsign': callsign, 'desc': desc, 'icon': iconType }
+        });
+
+        if (p.alt_baro !== 'ground') {
+            const speedKmh = (p.gs || 0) * CONFIG.KNOTS_TO_KMH;
+            const dist2Min = speedKmh * (CONFIG.PROJECTION_MINUTES / 60); 
+            const futurePos = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, dist2Min);
+            pathFeatures.push({ 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': [[p.currentLon, p.currentLat], [futurePos[0], futurePos[1]]] } });
         }
+    });
 
-        // === COCKPIT MODE LOGIC ===
-        function enterCockpitMode(hex) {
-            const p = state.planesData.get(hex); if(!p) return;
-            state.selectedHex = hex;
-            state.mode = 'cockpit';
-            
-            DOM.mainView.classList.add('hidden');
-            DOM.cockpitView.classList.add('active');
-            state.cockpitMap.resize(); 
-            
-            const call = (p.flight || "Target").split('').join(' ');
-            const type = getAircraftTypeName(p.t);
-            speak(`Welcome aboard ${call}.`);
+    state.map.getSource('planes').setData({ 'type': 'FeatureCollection', 'features': planeFeatures });
+    state.map.getSource('flight-paths').setData({ 'type': 'FeatureCollection', 'features': pathFeatures });
+    
+    requestAnimationFrame(animatePlanes);
+}
+		
+		function enterCockpitMode(hex) {
+    const p = state.planesData.get(hex); if(!p) return;
+    state.selectedHex = hex;
+    state.mode = 'cockpit';
+    
+    DOM.mainView.classList.add('hidden');
+    DOM.cockpitView.classList.add('active');
+    state.cockpitMap.resize(); 
+    setTimeout(() => {
+        if(state.mode === 'cockpit') {
+            document.getElementById('map').style.visibility = 'hidden';
         }
-
+    }, 500);
+    
+    const call = (p.flight || "Target").split('').join(' ');
+    speak(`Welcome aboard ${call}.`);
+}
         function exitCockpitMode() {
-            state.mode = 'radar';
-            state.selectedHex = null;
-            DOM.cockpitView.classList.remove('active');
-            DOM.mainView.classList.remove('hidden');
-            state.map.resize();
-            if(state.lat && state.lon) {
-                state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
-            }
-        }
+    document.getElementById('map').style.visibility = 'visible';
+
+    state.mode = 'radar';
+    state.selectedHex = null;
+    DOM.cockpitView.classList.remove('active');
+    DOM.mainView.classList.remove('hidden');
+    state.map.resize();
+    if(state.lat && state.lon) {
+        state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
+    }
+}
 
         function updateCockpitView() {
             if(!state.selectedHex || !state.cockpitMap) return;
@@ -1065,7 +1163,11 @@
             DOM.cAlt.textContent = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro);
             DOM.cSpd.textContent = Math.round(p.gs || 0);
             DOM.cStatus.textContent = getFlightPhase(p);
-
+			const heading = p.track || 0;
+    const compassPlane = document.getElementById('compassPlane');
+    if (compassPlane) {
+        compassPlane.style.transform = `rotate(${heading}deg)`;
+    }
             const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
             const zoom = getSmartZoom(alt);
             const leadDist = getLookAheadDistance(zoom);
@@ -1128,63 +1230,95 @@
             
             speak(`New contact. Callsign ${call}.`); 
         }
+function updateWeather(force = false) {
+    if (!state.lat || !state.lon) return;
+    const now = Date.now();
+    if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
+    state.lastWxUpdate = now;
+    
+    const headers = { 'User-Agent': '(planepatrol.app, contact@example.com)' };
 
-        function updateWeather(force = false) {
-            if (!state.lat || !state.lon) return;
-            const now = Date.now();
-            if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
-            state.lastWxUpdate = now;
-            
-            fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`)
-                .then(r => {
-                    if (!r.ok) throw new Error(`WX Points ${r.status}`);
-                    return r.json();
-                })
-                .then(d => {
-                    if (!d.properties || !d.properties.observationStations) throw new Error("No grid data");
-                    return fetch(d.properties.observationStations);
-                })
-                .then(r => {
-                    if (!r.ok) throw new Error(`Stations ${r.status}`);
-                    return r.json();
-                })
-                .then(d => {
-                    if (!d.features || d.features.length === 0) throw new Error("No Station");
-                    return fetch(d.features[0].id + '/observations/latest');
-                })
-                .then(r => {
-                    if (!r.ok) throw new Error(`Obs ${r.status}`);
-                    return r.json();
-                })
-                .then(d => {
-                    const p = d.properties;
-                    const tempC = p.temperature.value;
-                    const tempF = tempC !== null ? Math.round((tempC * 9/5) + 32) : '--';
-                    
-                    const windMS = p.windSpeed.value;
-                    const wind = windMS !== null ? Math.round(windMS * 1.94384) : 0;
-                    
-                    DOM.wxTemp.textContent = `${tempF}°`; 
-                    DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase(); 
-                    DOM.wxWind.textContent = wind;
-                })
-                .catch(e => {
-                    console.log("WX Error", e);
-                    DOM.wxTemp.textContent = '--°';
-                    DOM.wxCond.textContent = 'UNAVAILABLE';
-                });
+    // Helper to get observation
+    const fetchObs = (url) => {
+        return fetch(url + '/observations/latest', { headers })
+            .then(r => {
+                if (!r.ok) throw new Error(`Obs ${r.status}`);
+                return r.json();
+            });
+    };
 
-            fetch(`${CONFIG.API_SUN}?lat=${state.lat}&lng=${state.lon}&formatted=0`)
-                .then(r => r.json())
-                .then(data => {
-                   if(data.status === 'OK') {
-                       const rise = new Date(data.results.sunrise).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
-                       const set = new Date(data.results.sunset).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
-                       if(DOM.wxRise) DOM.wxRise.textContent = rise; 
-                       if(DOM.wxSet) DOM.wxSet.textContent = set;
-                   }
-                }).catch(e => console.log("Sun Error"));
+    // PERFORMANCE FIX: Use cached station URL if available
+    const weatherPromise = state.cachedStationUrl 
+        ? fetchObs(state.cachedStationUrl).catch(() => {
+            state.cachedStationUrl = null; // Clear cache on fail
+            return null;
+        })
+        : Promise.resolve(null);
+
+    weatherPromise.then(cachedData => {
+        if (cachedData) return cachedData;
+
+        // Fallback: Full Waterfall Request
+        return fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`, { headers })
+            .then(r => {
+                if (!r.ok) throw new Error(`WX Points ${r.status}`);
+                return r.json();
+            })
+            .then(d => {
+                if (!d.properties || !d.properties.observationStations) throw new Error("No grid data");
+                return fetch(d.properties.observationStations, { headers });
+            })
+            .then(r => {
+                if (!r.ok) throw new Error(`Stations ${r.status}`);
+                return r.json();
+            })
+            .then(d => {
+                if (!d.features || d.features.length === 0) throw new Error("No Station");
+                const stationUrl = d.features[0].id;
+                state.cachedStationUrl = stationUrl; // CACHE IT
+                return fetchObs(stationUrl);
+            });
+    })
+    .then(d => {
+        const p = d.properties;
+        const tempC = p.temperature.value;
+        const tempF = tempC !== null ? Math.round((tempC * 9/5) + 32) : '--';
+        
+        const windMS = p.windSpeed.value;
+        const wind = windMS !== null ? Math.round(windMS * 1.94384) : 0;
+        
+        // Fix: Populate Wind Direction
+        const windDirVal = p.windDirection.value;
+        const windDirStr = getCardinalDirection(windDirVal);
+        document.getElementById('wxDir').textContent = windDirStr;
+
+        // Fix: Populate Visibility
+        if (p.visibility.value) {
+            const visMiles = Math.round(p.visibility.value * 0.000621371);
+            document.getElementById('wxVis').textContent = visMiles;
         }
+        
+        DOM.wxTemp.textContent = `${tempF}°`; 
+        DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase(); 
+        DOM.wxWind.textContent = wind;
+    })
+    .catch(e => {
+        console.log("WX Error", e);
+        DOM.wxTemp.textContent = '--°';
+        DOM.wxCond.textContent = 'UNAVAILABLE';
+    });
+
+    fetch(`${CONFIG.API_SUN}?lat=${state.lat}&lng=${state.lon}&formatted=0`)
+        .then(r => r.json())
+        .then(data => {
+           if(data.status === 'OK') {
+               const rise = new Date(data.results.sunrise).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+               const set = new Date(data.results.sunset).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+               if(DOM.wxRise) DOM.wxRise.textContent = rise; 
+               if(DOM.wxSet) DOM.wxSet.textContent = set;
+           }
+        }).catch(e => console.log("Sun Error"));
+}
 
         function selectLocationSource(source) {
             document.getElementById('optGeo')?.classList.remove('selected');
@@ -1250,7 +1384,6 @@
                 state.useGeo = false; 
                 state.selectedAirport = source;
                 
-                // FIXED: Clear watch when switching to airport
                 if (state.watchId) { 
                     navigator.geolocation.clearWatch(state.watchId); 
                     state.watchId = null; 
