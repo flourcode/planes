@@ -68,7 +68,7 @@
         .settings-btn:active { transform: scale(0.9); }
         
         /* NEW RESET BUTTON */
-        .reset-btn { position: fixed; bottom: 120px; right: clamp(20px, 4vw, 40px); width: 60px; height: 60px; background: #ff3b30; color: #fff; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; font-size: 24px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 80; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: auto; }
+        .reset-btn { position: fixed; bottom: 110px; right: clamp(20px, 4vw, 40px); width: 60px; height: 60px; background: var(--theme-primary); color: #fff; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; font-size: 24px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 80; box-shadow: 0 4px 12px rgba(0,0,0,0.5); pointer-events: auto; }
         
         /* === PING RING ANIMATION === */
         .ping-wrapper { width: 0; height: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
@@ -177,9 +177,9 @@
         @keyframes pulse-flight { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
         body.loading { overflow: hidden; pointer-events: none; }
         .app-credit { font-size: 12px; color: var(--theme-text-secondary); margin-top: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
-		.compass-container {
+.compass-container {
     position: fixed;
-    top: 100px; /* Below the callsign box */
+    top: 120px; /* Below the callsign box */
     right: 20px; /* Aligned with right edge */
     width: 80px;
     height: 80px;
@@ -194,13 +194,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.compass-ring {
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .compass-mark {
@@ -220,11 +213,17 @@
 .compass-mark.east  { right: 0; top: 50%; transform: translateY(-50%); }
 .compass-mark.west  { left: 0; top: 50%; transform: translateY(-50%); }
 
+.compass-ring {
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .compass-plane {
     width: 40px;
     height: 40px;
-    /* Smooth rotation transition */
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
     </style>
 </head>
@@ -257,12 +256,11 @@
             
             <div class="hud-tr">
                 <div class="wx-temp" id="wxTemp">--°</div>
-                <div class="wx-details">WIND <span id="wxDir">--</span> @ <span id="wxWind">--</span> KT</div>
+                <div class="wx-details">
+                    WIND <span id="wxDir">--</span> @ <span id="wxWind">--</span> KT
+                </div>
                 <div class="wx-details" style="margin-top: 5px;">
                     <span id="wxCond">LOADING</span> | VIS: <span id="wxVis">--</span> MI
-                </div>
-                <div class="wx-sun-row">
-                    RISE <span id="wxRise">--:--</span> &nbsp; SET <span id="wxSet">--:--</span>
                 </div>
             </div>
 
@@ -280,7 +278,7 @@
         </div>
         
         <button id="resetBtn" class="reset-btn" onclick="resetToGPS()">
-            <span>⌖</span>
+            <span>𖦏</span>
         </button>
     </div>
 
@@ -299,19 +297,20 @@
             <div class="c-callsign" id="cCallsign">N/A</div>
             <div class="c-type" id="cType">UNKNOWN</div>
         </div>
-<div class="compass-container">
-    <div class="compass-ring">
-        <div class="compass-mark north">N</div>
-        <div class="compass-mark east">E</div>
-        <div class="compass-mark south">S</div>
-        <div class="compass-mark west">W</div>
-    </div>
-    <div id="compassPlane" class="compass-plane">
-        <svg viewBox="0 0 24 24" fill="white">
-            <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z" />
-        </svg>
-    </div>
-</div>
+
+        <div class="compass-container">
+            <div id="compassRing" class="compass-ring">
+                <div class="compass-mark north">N</div>
+                <div class="compass-mark east">E</div>
+                <div class="compass-mark south">S</div>
+                <div class="compass-mark west">W</div>
+            </div>
+            <div class="compass-plane">
+                <svg viewBox="0 0 24 24" fill="white">
+                    <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z" />
+                </svg>
+            </div>
+        </div>
         <div class="c-hud-bottom">
             <div class="c-data-block">
                 <div class="c-label">ALTITUDE</div>
@@ -1151,48 +1150,50 @@ function animatePlanes() {
     }
 }
 
-        function updateCockpitView() {
-            if(!state.selectedHex || !state.cockpitMap) return;
-            const p = state.planesData.get(state.selectedHex);
-            if(!p) return;
+function updateCockpitView() {
+    if(!state.selectedHex || !state.cockpitMap) return;
+    const p = state.planesData.get(state.selectedHex);
+    if(!p) return;
 
-            DOM.cCallsign.textContent = p.flight ? p.flight.trim() : (p.r || p.hex);
-            DOM.cType.textContent = getAircraftTypeName(p.t);
-            const dist = calcDist(state.lat, state.lon, p.currentLat, p.currentLon);
-            DOM.cDist.textContent = dist.toFixed(1);
-            DOM.cAlt.textContent = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro);
-            DOM.cSpd.textContent = Math.round(p.gs || 0);
-            DOM.cStatus.textContent = getFlightPhase(p);
-			const heading = p.track || 0;
-    const compassPlane = document.getElementById('compassPlane');
-    if (compassPlane) {
-        compassPlane.style.transform = `rotate(${heading}deg)`;
+    DOM.cCallsign.textContent = p.flight ? p.flight.trim() : (p.r || p.hex);
+    DOM.cType.textContent = getAircraftTypeName(p.t);
+    const dist = calcDist(state.lat, state.lon, p.currentLat, p.currentLon);
+    DOM.cDist.textContent = dist.toFixed(1);
+    DOM.cAlt.textContent = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro);
+    DOM.cSpd.textContent = Math.round(p.gs || 0);
+    DOM.cStatus.textContent = getFlightPhase(p);
+
+    const heading = p.track || 0;
+    const compassRing = document.getElementById('compassRing');
+    if (compassRing) {
+        compassRing.style.transform = `rotate(-${heading}deg)`;
     }
-            const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
-            const zoom = getSmartZoom(alt);
-            const leadDist = getLookAheadDistance(zoom);
-            
-            const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, leadDist);
-            
-            const currentBearing = state.cockpitMap.getBearing();
-            const targetBearing = p.track || 0;
-            
-            const cameraParams = {
-                center: target,
-                zoom: zoom,
-                pitch: 80
-            };
 
-            if (Math.abs(targetBearing - currentBearing) > 0.1) {
-                cameraParams.bearing = targetBearing;
-            }
+    const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
+    const zoom = getSmartZoom(alt);
+    const leadDist = getLookAheadDistance(zoom);
+    
+    const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, leadDist);
+    
+    const currentBearing = state.cockpitMap.getBearing();
+    const targetBearing = p.track || 0;
+    
+    const cameraParams = {
+        center: target,
+        zoom: zoom,
+        pitch: 80
+    };
 
-            state.cockpitMap.jumpTo(cameraParams);
-            
-            DOM.ahrsCrosshair.style.transform = `translate(-50%,-50%)`;
-        }
+    if (Math.abs(targetBearing - currentBearing) > 0.1) {
+        cameraParams.bearing = targetBearing;
+    }
 
-        function getSmartZoom(alt) {
+    state.cockpitMap.jumpTo(cameraParams);
+    
+    DOM.ahrsCrosshair.style.transform = `translate(-50%,-50%)`;
+}
+
+function getSmartZoom(alt) {
             return Math.max(9, 16 - (alt / 6000));
         }
 
@@ -1233,9 +1234,11 @@ function animatePlanes() {
 function updateWeather(force = false) {
     if (!state.lat || !state.lon) return;
     const now = Date.now();
+    // Throttle: Don't update if less than 15 mins (CONFIG.WX_POLL_MS) has passed
     if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
     state.lastWxUpdate = now;
     
+    // NWS requires a User-Agent or it might block the request (causing "Wind not being pulled")
     const headers = { 'User-Agent': '(planepatrol.app, contact@example.com)' };
 
     // Helper to get observation
@@ -1247,7 +1250,7 @@ function updateWeather(force = false) {
             });
     };
 
-    // PERFORMANCE FIX: Use cached station URL if available
+    // 1. Try Cached Station first to be fast
     const weatherPromise = state.cachedStationUrl 
         ? fetchObs(state.cachedStationUrl).catch(() => {
             state.cachedStationUrl = null; // Clear cache on fail
@@ -1258,7 +1261,7 @@ function updateWeather(force = false) {
     weatherPromise.then(cachedData => {
         if (cachedData) return cachedData;
 
-        // Fallback: Full Waterfall Request
+        // 2. Fallback: Full Waterfall Request (Points -> Stations -> Obs)
         return fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`, { headers })
             .then(r => {
                 if (!r.ok) throw new Error(`WX Points ${r.status}`);
@@ -1275,51 +1278,48 @@ function updateWeather(force = false) {
             .then(d => {
                 if (!d.features || d.features.length === 0) throw new Error("No Station");
                 const stationUrl = d.features[0].id;
-                state.cachedStationUrl = stationUrl; // CACHE IT
+                state.cachedStationUrl = stationUrl; // Cache for next time
                 return fetchObs(stationUrl);
             });
     })
     .then(d => {
         const p = d.properties;
+        
         const tempC = p.temperature.value;
         const tempF = tempC !== null ? Math.round((tempC * 9/5) + 32) : '--';
-        
-        const windMS = p.windSpeed.value;
-        const wind = windMS !== null ? Math.round(windMS * 1.94384) : 0;
-        
-        // Fix: Populate Wind Direction
-        const windDirVal = p.windDirection.value;
-        const windDirStr = getCardinalDirection(windDirVal);
-        document.getElementById('wxDir').textContent = windDirStr;
+        DOM.wxTemp.textContent = `${tempF}°`; 
 
-        // Fix: Populate Visibility
+        DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase(); 
+
+        const windMS = p.windSpeed.value;
+        const windKt = windMS !== null ? Math.round(windMS * 1.94384) : 0;
+
+        const windDirVal = p.windDirection.value;
+        const windDirStr = windDirVal !== null ? getCardinalDirection(windDirVal) : '--';
+
+        const elWind = document.getElementById('wxWind');
+        const elDir = document.getElementById('wxDir');
+        
+        if (elWind) elWind.textContent = windKt;
+        if (elDir) elDir.textContent = windDirStr;
+
         if (p.visibility.value) {
             const visMiles = Math.round(p.visibility.value * 0.000621371);
-            document.getElementById('wxVis').textContent = visMiles;
+            const elVis = document.getElementById('wxVis');
+            if(elVis) elVis.textContent = visMiles;
         }
-        
-        DOM.wxTemp.textContent = `${tempF}°`; 
-        DOM.wxCond.textContent = (p.textDescription || "Clear").toUpperCase(); 
-        DOM.wxWind.textContent = wind;
     })
     .catch(e => {
         console.log("WX Error", e);
         DOM.wxTemp.textContent = '--°';
-        DOM.wxCond.textContent = 'UNAVAILABLE';
+        DOM.wxCond.textContent = 'OFFLINE';
+        
+        const elWind = document.getElementById('wxWind');
+        const elDir = document.getElementById('wxDir');
+        if (elWind) elWind.textContent = '--';
+        if (elDir) elDir.textContent = '--';
     });
-
-    fetch(`${CONFIG.API_SUN}?lat=${state.lat}&lng=${state.lon}&formatted=0`)
-        .then(r => r.json())
-        .then(data => {
-           if(data.status === 'OK') {
-               const rise = new Date(data.results.sunrise).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
-               const set = new Date(data.results.sunset).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
-               if(DOM.wxRise) DOM.wxRise.textContent = rise; 
-               if(DOM.wxSet) DOM.wxSet.textContent = set;
-           }
-        }).catch(e => console.log("Sun Error"));
 }
-
         function selectLocationSource(source) {
             document.getElementById('optGeo')?.classList.remove('selected');
             document.getElementById('optJFK')?.classList.remove('selected');
