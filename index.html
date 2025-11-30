@@ -35,7 +35,6 @@
         --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
         --transition-medium: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
         --transition-slow: 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
-        --map-filter: grayscale(100%) invert(100%) brightness(38%) contrast(110%) sepia(5%);
     }
 
     :root.light-theme {
@@ -86,7 +85,6 @@
     #map {
         position: absolute; inset: 0; z-index: 0;
         background: var(--bg);
-        filter: var(--map-filter);
         transition: filter var(--transition-medium);
     }
     #cockpitMap { position: absolute; inset: 0; z-index: 0; background: var(--bg); }
@@ -412,6 +410,46 @@
         display: inline-block;
     }
 
+    .registration {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        margin-top: 6px;
+        letter-spacing: 0.5px;
+    }
+
+    /* VSI Indicator */
+    .vsi-indicator {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 16px;
+        transition: all var(--transition-fast);
+    }
+    .vsi-indicator.climbing { color: var(--success); }
+    .vsi-indicator.descending { color: var(--warning); }
+    .vsi-indicator.level { color: var(--text-tertiary); }
+
+    /* Phase Badge */
+    .phase-row {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--separator);
+    }
+    .phase-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        background: var(--accent);
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .phase-badge.ground { background: var(--text-tertiary); }
+    .phase-badge.climbing { background: var(--success); }
+    .phase-badge.descending { background: var(--warning); }
+
     .compass-block {
         width: 72px; height: 72px;
         background: var(--surface);
@@ -723,22 +761,13 @@
         margin-bottom: 16px;
     }
 
-    .help-list {
+    .help-text {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
         background: var(--surface-elevated);
         border-radius: 12px;
-        padding: 4px 0;
-    }
-    .help-item {
         padding: 14px 16px;
-        font-size: 14px;
-        color: var(--text-secondary);
-        line-height: 1.4;
-        border-bottom: 1px solid var(--separator);
-    }
-    .help-item:last-child { border-bottom: none; }
-    .help-item strong {
-        color: var(--text-primary);
-        font-weight: 600;
     }
 
     /* === NEARBY AIRCRAFT DRAWER === */
@@ -785,21 +814,38 @@
     }
     .nearby-item:hover { background: var(--surface-elevated); }
     .nearby-item:active { transform: scale(0.98); }
+    .nearby-main {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
     .nearby-callsign {
         font-size: 14px;
         font-weight: 600;
         letter-spacing: -0.3px;
     }
+    .nearby-alt {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-family: 'SF Mono', 'Menlo', monospace;
+    }
     .nearby-distance {
         font-size: 12px;
         color: var(--text-secondary);
     }
+    .trend-arrow {
+        font-size: 10px;
+        margin-left: 2px;
+    }
+    .trend-arrow.climbing { color: var(--success); }
+    .trend-arrow.descending { color: var(--warning); }
+    .trend-arrow.level { color: var(--text-tertiary); }
     .nearby-toggle {
         position: fixed;
         bottom: calc(24px + var(--safe-bottom));
-        left: 140px;
-        width: 40px;
-        height: 40px;
+        left: 130px;
+        width: 48px;
+        height: 48px;
         background: var(--surface);
         backdrop-filter: var(--blur);
         -webkit-backdrop-filter: var(--blur);
@@ -815,8 +861,8 @@
     }
     .nearby-toggle:active { transform: scale(0.92); }
     .nearby-toggle svg {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         color: var(--text-primary);
         opacity: 0.8;
     }
@@ -952,28 +998,20 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 6v6M12 16v.01"/>
-                        </svg>
-                    </button>
-                    <button class="action-btn" id="settingsBtn" aria-label="Settings">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                    </button>
-                </div>
+    <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking" style="font-size: 24px;">
+        ⏻
+    </button>
+    
+    <button class="action-btn" id="settingsBtn" aria-label="Settings" style="font-size: 24px;">
+        ☰
+    </button>
+</div>
             </div>
         </div>
 
-        <button class="reset-btn" id="resetBtn" aria-label="Reset to GPS location">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M12 2a10 10 0 1 0 10 10"/>
-                <path d="M22 2v6h-6"/>
-            </svg>
-        </button>
+       <button class="reset-btn" id="resetBtn" aria-label="Reset to GPS location" style="font-size: 26px; padding-bottom: 2px;">
+    ↻
+</button>
 
         <!-- Nearby Aircraft Toggle -->
         <button class="nearby-toggle" id="nearbyToggle" aria-label="Show nearby aircraft">
@@ -1014,6 +1052,7 @@
                 <div class="callsign-block">
                     <div class="callsign" id="cCallsign">---</div>
                     <div class="aircraft-type" id="cType">Unknown Aircraft</div>
+                    <div class="registration" id="cReg"></div>
                     <div class="airline-badge" id="cAirline"></div>
                 </div>
                 
@@ -1042,10 +1081,16 @@
             <div class="cockpit-bottom">
                 <div class="data-card">
                     <div class="data-label">Altitude</div>
-                    <div class="data-value"><span id="cAlt">0</span><span class="data-unit">ft</span></div>
+                    <div class="data-value">
+                        <span id="cAlt">0</span><span class="data-unit" id="cAltUnit">ft</span>
+                        <span class="vsi-indicator" id="vsiIndicator"></span>
+                    </div>
                     <div class="data-row">
-                        <div class="data-label">Distance</div>
-                        <div class="data-value"><span id="cDist">0.0</span><span class="data-unit">mi</span></div>
+                        <div class="data-label">V/S</div>
+                        <div class="data-value"><span id="cVsi">0</span><span class="data-unit">fpm</span></div>
+                    </div>
+                    <div class="data-row phase-row">
+                        <div class="phase-badge" id="phaseBadge">Cruising</div>
                     </div>
                 </div>
                 
@@ -1057,11 +1102,11 @@
                 </button>
                 
                 <div class="data-card right">
-                    <div class="data-label">Speed</div>
+                    <div class="data-label">Ground Speed</div>
                     <div class="data-value"><span id="cSpd">0</span><span class="data-unit">kts</span></div>
                     <div class="data-row">
-                        <div class="data-label">Status</div>
-                        <div class="data-value" id="cStatus" style="font-size: 18px;">Cruising</div>
+                        <div class="data-label">Distance</div>
+                        <div class="data-value"><span id="cDist">0.0</span><span class="data-unit">mi</span></div>
                     </div>
                 </div>
             </div>
@@ -1112,17 +1157,9 @@
         </div>
 
         <div class="settings-section">
-            <div class="section-title">Help</div>
-            <div class="help-list">
-                <div class="help-item">
-                    <strong>Radar View</strong> shows all aircraft within your selected range.
-                </div>
-                <div class="help-item">
-                    <strong>Tap a plane</strong> to enter Cockpit mode and lock onto that aircraft.
-                </div>
-                <div class="help-item">
-                    <strong>Engine Sound</strong> plays ambient noise matching the aircraft type. Toggle it in cockpit view.
-                </div>
+            <div class="section-title">Tips</div>
+            <div class="help-text">
+                Tap any aircraft on the map to track it. Use the sound button in cockpit view for immersive engine audio.
             </div>
         </div>
     </div>
@@ -1133,7 +1170,7 @@ const CONFIG = {
     API_PLANES: 'https://api.airplanes.live/v2/point/',
     API_WX_POINTS: 'https://api.weather.gov/points/',
     RADAR_TILE_URL: 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png',
-    MAP_TILES: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    MAP_TILES: 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
     SAT_TILES: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     POLL_MS: 5000,
     WX_POLL_MS: 900000,
@@ -1548,7 +1585,6 @@ const DOM = {
     cAlt: document.getElementById('cAlt'),
     cDist: document.getElementById('cDist'),
     cSpd: document.getElementById('cSpd'),
-    cStatus: document.getElementById('cStatus'),
     settingsPanel: document.getElementById('settingsPanel'),
     settingsOverlay: document.getElementById('settingsOverlay'),
     radarToggle: document.getElementById('radarToggle'),
@@ -1615,25 +1651,33 @@ function updateNearbyList() {
     
     state.planesData.forEach((p, hex) => {
         const dist = calcDist(state.lat, state.lon, p.currentLat || p.lat, p.currentLon || p.lon);
+        const altInfo = formatAltitude(p.alt_baro, p.alt_baro === 'ground');
+        const vsInfo = formatVerticalSpeed(p.baro_rate);
         planes.push({
             hex,
             callsign: p.flight ? p.flight.trim() : (p.r || hex.toUpperCase()),
-            dist
+            dist,
+            alt: altInfo.value + altInfo.unit,
+            trend: vsInfo.arrow,
+            trendClass: vsInfo.trend
         });
     });
     
-    // Sort by distance, take top 3
+    // Sort by distance, take top 5
     planes.sort((a, b) => a.dist - b.dist);
-    const top3 = planes.slice(0, 3);
+    const top5 = planes.slice(0, 5);
     
-    if (top3.length === 0) {
+    if (top5.length === 0) {
         listEl.innerHTML = '<div class="nearby-empty">No aircraft in range</div>';
         return;
     }
     
-    listEl.innerHTML = top3.map(p => `
+    listEl.innerHTML = top5.map(p => `
         <div class="nearby-item" data-hex="${p.hex}">
-            <span class="nearby-callsign">${p.callsign}</span>
+            <div class="nearby-main">
+                <span class="nearby-callsign">${p.callsign}</span>
+                <span class="nearby-alt">${p.alt} <span class="trend-arrow ${p.trendClass}">${p.trend}</span></span>
+            </div>
             <span class="nearby-distance">${p.dist.toFixed(1)} mi</span>
         </div>
     `).join('');
@@ -1716,12 +1760,65 @@ function getIconType(t, category) {
     return 'plane-jet';
 }
 
+// More realistic flight phase detection based on pilot knowledge
 function getFlightPhase(p) {
-    if (p.alt_baro === 'ground') return 'Taxiing';
-    const rate = p.baro_rate || 0;
-    if (rate > 500) return 'Climbing';
-    if (rate < -500) return 'Descending';
-    return 'Cruising';
+    const alt = p.alt_baro === 'ground' ? 0 : (p.alt_baro || 0);
+    const gs = p.gs || 0;
+    const vs = p.baro_rate || 0;
+    
+    // On ground
+    if (p.alt_baro === 'ground' || alt < 100) {
+        if (gs < 5) return 'ground';      // Parked/stationary
+        if (gs < 30) return 'ground';     // Taxiing
+        if (gs >= 30 && gs < 80) return 'takeoff'; // Takeoff roll
+        return 'takeoff';
+    }
+    
+    // Airborne logic
+    if (alt < 1500) {
+        if (vs > 300) return 'takeoff';   // Initial climb after takeoff
+        if (vs < -300) return 'landing';  // Final approach/landing
+        if (gs < 150) return 'approach';  // Pattern work
+        return 'climb';
+    }
+    
+    if (alt < 10000) {
+        if (vs > 500) return 'climb';
+        if (vs < -500) return 'descent';
+        if (vs < -300 && alt < 5000) return 'approach';
+        return 'cruise';
+    }
+    
+    // Above 10,000ft
+    if (vs > 300) return 'climb';
+    if (vs < -300) return 'descent';
+    return 'cruise';
+}
+
+// Format altitude like pilots do - Flight Levels above 18,000ft
+function formatAltitude(alt, isGround) {
+    if (isGround || alt === 'ground') return { value: 'GND', unit: '', fl: false };
+    
+    const altNum = Math.round(alt);
+    
+    // Above 18,000ft MSL, pilots use Flight Levels
+    if (altNum >= 18000) {
+        const fl = Math.round(altNum / 100);
+        return { value: `FL${fl}`, unit: '', fl: true };
+    }
+    
+    return { value: altNum.toLocaleString(), unit: 'ft', fl: false };
+}
+
+// Format vertical speed with trend
+function formatVerticalSpeed(vs) {
+    if (!vs || Math.abs(vs) < 50) return { value: '0', trend: 'level', arrow: '—' };
+    
+    const rounded = Math.round(vs / 50) * 50; // Round to nearest 50
+    
+    if (vs > 100) return { value: `+${rounded}`, trend: 'climbing', arrow: '↑' };
+    if (vs < -100) return { value: `${rounded}`, trend: 'descending', arrow: '↓' };
+    return { value: '0', trend: 'level', arrow: '—' };
 }
 
 // === MAP INITIALIZATION ===
@@ -1746,7 +1843,7 @@ function initMap() {
 
             // Load plane icons
             // Note: Map has invert(100%) filter, so dark icons appear light
-            const iconColor = "#000000";
+            const iconColor = "#ebffeb";
             const loadIcon = (name, svg) => {
                 const img = new Image();
                 img.onload = () => {
@@ -1775,11 +1872,8 @@ function initMap() {
             state.map.addLayer({
                 id: 'user-location-dot', type: 'circle', source: 'user-location',
                 paint: {
-                    'circle-radius': 10,
-                    'circle-color': '#916000',
-                    'circle-stroke-width': 3,
-                    'circle-stroke-color': 'rgba(10, 10, 8, 0.9)',
-                    'circle-opacity': 0.95
+                    'circle-radius': 20,
+                    'circle-color': '#ebffeb80',
                 }
             });
 
@@ -1788,7 +1882,7 @@ function initMap() {
                 id: 'flight-trails-layer', type: 'line', source: 'flight-trails',
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: { 
-                    'line-color': 'rgba(0, 0, 0, 0.5)',
+                    'line-color': '#ebffeb80',
                     'line-width': 2,
                     'line-blur': 1
                 }
@@ -1799,7 +1893,7 @@ function initMap() {
                 id: 'flight-predictions-layer', type: 'line', source: 'flight-predictions',
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
                 paint: { 
-                    'line-color': 'rgba(0, 80, 180, 0.4)',
+                    'line-color': '#ebffeb80',
                     'line-width': 2,
                     'line-dasharray': [2, 4]
                 }
@@ -1853,20 +1947,40 @@ function initMap() {
         });
 
         // Cockpit map
-        state.cockpitMap = new maplibregl.Map({
-            container: 'cockpitMap',
-            style: {
-                version: 8,
-                sources: {
-                    'satellite': { type: 'raster', tiles: [CONFIG.SAT_TILES], tileSize: 256 },
-                    'terrain-source': { type: 'raster-dem', url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json', tileSize: 256 }
-                },
-                layers: [{ id: 'sat', type: 'raster', source: 'satellite', paint: { 'raster-saturation': -0.4 }}],
-                sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' },
-                terrain: { source: 'terrain-source', exaggeration: 1.1 }
+state.cockpitMap = new maplibregl.Map({
+    container: 'cockpitMap',
+    style: {
+        version: 8,
+        sources: {
+            'satellite': { type: 'raster', tiles: [CONFIG.SAT_TILES], tileSize: 256 },
+            'radar': { type: 'raster', tiles: [CONFIG.RADAR_TILE_URL], tileSize: 256 },
+            'terrain-source': { type: 'raster-dem', url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json', tileSize: 256 }
+        },
+        layers: [
+            // 1. Satellite Layer
+            { 
+                id: 'sat', 
+                type: 'raster', 
+                source: 'satellite', 
+                paint: { 'raster-saturation': -0.4 } 
             },
-            center: [0, 0], zoom: 12, pitch: 85, maxPitch: 85, interactive: false
-        });
+            // 2. Radar Layer (Notice the comma above and the separate object here)
+            { 
+                id: 'cockpit-radar', 
+                type: 'raster', 
+                source: 'radar', 
+                paint: { 'raster-opacity': 0.6 } // 60% opacity lets you see the ground through the rain
+            }
+        ],
+        sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' },
+        terrain: { source: 'terrain-source', exaggeration: 1.1 }
+    },
+    center: [0, 0], 
+    zoom: 12, 
+    pitch: 85, 
+    maxPitch: 85, 
+    interactive: false
+});
 
     } catch (e) {
         console.error('Map init error:', e);
@@ -2159,22 +2273,76 @@ function updateCockpitView() {
         airlineBadge.classList.remove('show');
     }
     
+    // Registration (tail number)
+    const regEl = document.getElementById('cReg');
+    if (p.r) {
+        regEl.textContent = p.r;
+        regEl.style.display = 'block';
+    } else {
+        regEl.style.display = 'none';
+    }
+    
+    // Distance
     DOM.cDist.textContent = calcDist(state.lat, state.lon, p.currentLat, p.currentLon).toFixed(1);
-    DOM.cAlt.textContent = p.alt_baro === 'ground' ? 'GND' : Math.round(p.alt_baro).toLocaleString();
+    
+    // Altitude with Flight Level formatting
+    const altInfo = formatAltitude(p.alt_baro, p.alt_baro === 'ground');
+    DOM.cAlt.textContent = altInfo.value;
+    document.getElementById('cAltUnit').textContent = altInfo.unit;
+    
+    // Vertical Speed with trend indicator
+    const vsInfo = formatVerticalSpeed(p.baro_rate);
+    document.getElementById('cVsi').textContent = vsInfo.value;
+    const vsiIndicator = document.getElementById('vsiIndicator');
+    vsiIndicator.textContent = vsInfo.arrow;
+    vsiIndicator.className = `vsi-indicator ${vsInfo.trend}`;
+    
+    // Ground Speed
     DOM.cSpd.textContent = Math.round(p.gs || 0);
-    DOM.cStatus.textContent = getFlightPhase(p);
-
-    const heading = p.track || 0;
+    
+    // Compass
+    const heading = Math.round(p.track || 0);
     document.getElementById('compassRing').style.transform = `rotate(-${heading}deg)`;
+    
+    // Flight phase badge
+    const phase = getFlightPhase(p);
+    const phaseBadge = document.getElementById('phaseBadge');
+    const phaseLabels = {
+        ground: 'On Ground',
+        takeoff: 'Takeoff',
+        climb: 'Climbing',
+        cruise: 'Cruising',
+        descent: 'Descending',
+        approach: 'Approach',
+        landing: 'Landing'
+    };
+    phaseBadge.textContent = phaseLabels[phase] || 'Unknown';
+    phaseBadge.className = 'phase-badge';
+    if (phase === 'ground') phaseBadge.classList.add('ground');
+    else if (phase === 'takeoff' || phase === 'climb') phaseBadge.classList.add('climbing');
+    else if (phase === 'descent' || phase === 'approach' || phase === 'landing') phaseBadge.classList.add('descending');
 
     const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
     const zoom = Math.max(9, 16 - (alt / 6000));
     const leadDist = Math.max(0.5, (17 - zoom) * 2.5);
     const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, leadDist);
+	
+
 
     state.cockpitMap.jumpTo({ center: target, zoom, pitch: 80, bearing: p.track || 0 });
-}
 
+    // Basic atmosphere simulation
+    const condition = DOM.wxCond.textContent.toLowerCase();
+    const isBadWeather = condition.includes('rain') || condition.includes('snow') || condition.includes('storm') || condition.includes('cloud');
+    
+    // If weather is bad, turn the sky/fog gray. If clear, keep it blue/dark.
+    const skyColor = isBadWeather ? '#2a2a2e' : '#050510';
+    const fogColor = isBadWeather ? '#2a2a2e' : '#0a2a4a';
+
+    // Apply to map (MapLibre 5.x style)
+    state.cockpitMap.setPaintProperty('sky', 'sky-color', skyColor);
+    state.cockpitMap.setPaintProperty('sky', 'fog-color', fogColor);
+}
 // === SETTINGS & CONTROLS ===
 function toggleSettings() {
     DOM.settingsPanel.classList.toggle('open');
@@ -2364,15 +2532,6 @@ document.querySelectorAll('.range-chip').forEach(el => {
     el.addEventListener('click', () => { haptic('light'); selectRadius(parseInt(el.dataset.range)); });
 });
 
-document.getElementById('radarToggle').addEventListener('click', () => {
-    haptic('light');
-    state.radarEnabled = !state.radarEnabled;
-    document.getElementById('radarToggle').classList.toggle('active');
-    if (state.map && state.map.getLayer('radar-layer')) {
-        state.map.setLayoutProperty('radar-layer', 'visibility', state.radarEnabled ? 'visible' : 'none');
-    }
-});
-
 // Theme toggle
 document.getElementById('themeToggle').addEventListener('click', () => {
     haptic('light');
@@ -2414,6 +2573,36 @@ document.getElementById('quitBtn').addEventListener('click', () => {
     haptic('medium');
     if (confirm('Pause tracking to save battery?')) quitApp();
 });
+
+// === UPDATED RADAR TOGGLE (Works for both maps) ===
+document.getElementById('radarToggle').addEventListener('click', () => {
+    haptic('light');
+    
+    // 1. Update the state
+    state.radarEnabled = !state.radarEnabled;
+    
+    // 2. Animate the switch knob
+    document.getElementById('radarToggle').classList.toggle('active', state.radarEnabled);
+    
+    // 3. Update MAIN Map Radar (if it exists)
+    if (state.map && state.map.getLayer('radar-layer')) {
+        state.map.setLayoutProperty(
+            'radar-layer', 
+            'visibility', 
+            state.radarEnabled ? 'visible' : 'none'
+        );
+    }
+
+    // 4. Update COCKPIT Map Radar (if it exists)
+    if (state.cockpitMap && state.cockpitMap.getLayer('cockpit-radar')) {
+        state.cockpitMap.setLayoutProperty(
+            'cockpit-radar', 
+            'visibility', 
+            state.radarEnabled ? 'visible' : 'none'
+        );
+    }
+});
+
 document.getElementById('wakeBtn').addEventListener('click', () => { haptic('medium'); wakeApp(); });
 
 // Settings swipe-to-close
@@ -2461,9 +2650,13 @@ document.addEventListener('visibilitychange', () => {
         engineAudio.stop();
     } else {
         // Tab visible - resume polling if app is running
-        if (state.map && !document.getElementById('offlineOverlay').classList.contains('active')) {
+        // FIX: Check style.display instead of classList.contains('active')
+        const isOffline = document.getElementById('offlineOverlay').style.display === 'flex';
+        
+        if (state.map && !isOffline) {
             if (!state.planeInterval) {
-                state.planeInterval = setInterval(fetchPlanes, CONFIG.PLANE_POLL_MS);
+                // FIX: Used CONFIG.POLL_MS instead of CONFIG.PLANE_POLL_MS
+                state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS); 
                 fetchPlanes();
             }
             if (!state.wxInterval) {
