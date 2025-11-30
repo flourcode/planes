@@ -734,7 +734,27 @@ function initMap() {
 
             state.map.addLayer({ id: 'user-location-dot', type: 'circle', source: 'user-location', paint: { 'circle-radius': 20, 'circle-color': '#ebffeb80' }});
             state.map.addLayer({ id: 'flight-trails-layer', type: 'line', source: 'flight-trails', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#ebffeb80', 'line-width': 2, 'line-blur': 1 }});
-            state.map.addLayer({ id: 'flight-predictions-layer', type: 'line', source: 'flight-predictions', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#ebffeb80', 'line-width': 2, 'line-dasharray': [2, 4] }});
+            // Existing Line Layer (Added Filter to ignore dots)
+            state.map.addLayer({ 
+                id: 'flight-predictions-layer', 
+                type: 'line', 
+                source: 'flight-predictions', 
+                layout: { 'line-join': 'round', 'line-cap': 'round' }, 
+                paint: { 'line-color': '#ebffeb80', 'line-width': 2, 'line-dasharray': [2, 4] },
+                filter: ['==', '$type', 'LineString'] 
+            });
+
+            // NEW: Dot Layer for path termination
+            state.map.addLayer({
+                id: 'flight-predictions-dot',
+                type: 'circle',
+                source: 'flight-predictions',
+                paint: {
+                    'circle-radius': 6,
+                    'circle-color': '#ebffeb',
+                },
+                filter: ['==', '$type', 'Point']
+            });
             
             state.map.addLayer({
                 id: 'planes-layer', type: 'symbol', source: 'planes',
@@ -957,7 +977,19 @@ function animatePlanes() {
                 trailFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [...p.trail, [p.currentLon, p.currentLat]] }});
             }
             if (p.gs > 50 && p.alt_baro !== 'ground' && p.track !== undefined) {
-                predictionFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[p.currentLon, p.currentLat], getProjectedPoint(p.currentLat, p.currentLon, p.track, p.gs * CONFIG.KNOTS_TO_KMH * (60 / 3600))] }});
+                const projected = getProjectedPoint(p.currentLat, p.currentLon, p.track, p.gs * CONFIG.KNOTS_TO_KMH * (60 / 3600));
+                
+                // 1. The Line
+                predictionFeatures.push({ 
+                    type: 'Feature', 
+                    geometry: { type: 'LineString', coordinates: [[p.currentLon, p.currentLat], projected] }
+                });
+
+                // 2. The Dot (New)
+                predictionFeatures.push({
+                    type: 'Feature',
+                    geometry: { type: 'Point', coordinates: projected }
+                });
             }
         });
         
