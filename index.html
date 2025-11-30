@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0d0d0f">
     <meta name="apple-mobile-web-app-title" content="PlanePatrol">
@@ -12,6 +13,7 @@
     <link href="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 120 120'%3E%3Cpath fill='%23000000' d='M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z'/%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -32,6 +34,13 @@
         --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
 
+    /* FIX: Reduced blur on mobile devices for better GPU performance */
+    @media (max-width: 768px), (hover: none) {
+        :root {
+            --blur: blur(20px) saturate(150%);
+        }
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 
     html, body {
@@ -41,11 +50,11 @@
         font-family: 'Space Mono', monospace;
         overflow: hidden;
         overscroll-behavior: none; /* Prevents pull-to-refresh */
-        touch-action: none; /* Optimizes touch for map dragging */
+        touch-action: manipulation; /* FIX: Changed from 'none' to allow accessibility while preventing zoom */
     }
 
     /* === VIEWS === */
-    #main-view { position: absolute; inset: 0; z-index: 10; opacity: 1; transition: opacity 0.6s ease; }
+    #main-view { position: absolute; inset: 0; z-index: 10; opacity: 1; transition: opacity 0.6s ease; touch-action: none; }
     #main-view.hidden { opacity: 0; pointer-events: none; }
     
     #cockpit-view { 
@@ -54,7 +63,8 @@
         opacity: 0; 
         pointer-events: none; 
         visibility: hidden;
-        transition: opacity 0.6s ease, visibility 0s linear 0.6s; 
+        transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+        touch-action: none;
     }
     
     #cockpit-view.active { 
@@ -241,8 +251,8 @@
         <svg class="splash-icon" viewBox="-10 -10 120 120" fill="#e8e8eb">
             <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
         </svg>
-        <div class="splash-title">PlanePatrol</div>
-        <div class="splash-subtitle">Live aircraft tracking.</div>
+        <div class="splash-title">Plane Patrol</div>
+        <div class="splash-subtitle">Live Global Aircraft Tracking and Ride Alongs.</div>
         <div class="splash-status" id="splashStatus">
             Locating<span class="splash-dots"><span></span><span></span><span></span></span>
         </div>
@@ -284,7 +294,7 @@
                     <div class="count-number" id="planeCount">0</div>
                     <div class="count-label">Aircraft</div>
                 </div>
-                <div class="empty-state" id="emptyState">No aircraft in range.</div>
+                <div class="empty-state" id="emptyState">No aircraft. Increase radar range.</div>
                 <div class="action-buttons">
                     <button class="action-btn radar-active" id="radarBtn" aria-label="Toggle Weather Radar"><span class="wx-text">WX</span></button>
                     <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking" style="font-size: 24px;">⏻</button>
@@ -381,7 +391,11 @@ const CONFIG = {
     POLL_MS: 5000,
     WX_POLL_MS: 900000,
     ANIMATION_DURATION: 5000,
-    KNOTS_TO_KMH: 1.852
+    KNOTS_TO_KMH: 1.852,
+    // FIX: Added frame rate configs for throttling
+    ANIMATION_FRAME_MS: 33,      // ~30 FPS for plane animations
+    COCKPIT_UPDATE_MS: 100,      // ~10 FPS for cockpit camera (reduces GPU load)
+    MAP_UPDATE_MS: 66            // ~15 FPS for map source updates
 };
 
 const AIRCRAFT_TYPES = {
@@ -453,12 +467,39 @@ class EngineAudio {
             nodes.push(lfo, lfoGain, panner);
         }
         if (type === 'heli') {
-            const noise = this.ctx.createBufferSource(); noise.buffer = this.whiteBuffer; noise.loop = true;
-            const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 180; filter.Q.value = 2;
-            const modulator = this.ctx.createOscillator(); modulator.frequency.value = 5.5; modulator.type = 'sawtooth';
-            const chopper = this.ctx.createGain(); chopper.gain.value = 0;
-            modulator.connect(chopper.gain); noise.connect(filter).connect(chopper).connect(this.masterGain);
-            noise.start(); modulator.start(); nodes.push(noise, modulator, filter, chopper);
+            // === BASIC HELICOPTER ===
+            
+            // 1. Source: Deep Brown Noise
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = this.brownBuffer; 
+            noise.loop = true;
+
+            // 2. Filter: Static Lowpass
+            // We cut off high frequencies so it sounds like "air" not "static"
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 300; // Low rumble only
+            filter.Q.value = 0;           // No resonance (prevents the "laser" sound)
+
+            // 3. The Rotor: Simple Volume Chopper
+            const rotor = this.ctx.createOscillator();
+            rotor.type = 'sawtooth'; 
+            rotor.frequency.value = 7.8; 
+
+            // 4. Volume Gate
+            const chopperGain = this.ctx.createGain();
+            chopperGain.gain.value = 0;   
+            
+            // Connect rotor directly to volume (AM Synthesis)
+            // This pulses the noise from silent to loud 5.5 times/sec
+            rotor.connect(chopperGain.gain); 
+
+            // Connections
+            noise.connect(filter).connect(chopperGain).connect(this.masterGain);
+
+            noise.start(); rotor.start();
+            nodes.push(noise, filter, rotor, chopperGain);
+            
         } else if (type === 'prop') {
             const freq = 100;
             const osc1 = this.ctx.createOscillator(); const osc2 = this.ctx.createOscillator();
@@ -505,7 +546,31 @@ class EngineAudio {
         }, 2100);
     }
 }
-engineAudio = new EngineAudio();
+// FIX: Added const declaration
+const engineAudio = new EngineAudio();
+
+// FIX: Safe localStorage helper to handle private browsing
+function safeLocalStorage(key, defaultValue = null) {
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        return defaultValue;
+    }
+}
+function safeLocalStorageSet(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        // Silently fail in private browsing
+    }
+}
+
+// FIX: Device capability detection for performance optimization
+const deviceCapabilities = {
+    isLowEnd: navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false,
+    hasReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+};
 
 // === STATE ===
 const state = {
@@ -518,9 +583,14 @@ const state = {
     radarEnabled: true, soundEnabled: false,
     watchId: null, isFetchingPlanes: false, hasLockedLocation: false,
     cachedStationUrl: null, lastAnimateTime: 0, initializing: false,
-    abortController: null, // Network optimization
-    hasSeenPlaneTip: localStorage.getItem('pp-seen-plane-tip') === 'true',
-    hasSeenCockpitTip: localStorage.getItem('pp-seen-cockpit-tip') === 'true'
+    abortController: null,
+    // FIX: Use safe localStorage access
+    hasSeenPlaneTip: safeLocalStorage('pp-seen-plane-tip') === 'true',
+    hasSeenCockpitTip: safeLocalStorage('pp-seen-cockpit-tip') === 'true',
+    // FIX: Added separate timing for different update frequencies
+    lastMapUpdateTime: 0,
+    lastCockpitUpdateTime: 0,
+    animationRunning: false
 };
 
 // === DOM REFERENCES ===
@@ -555,8 +625,12 @@ function calcDist(lat1, lon1, lat2, lon2) {
     const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
+// FIX: Corrected haptic function with proper pattern lookup
 function haptic(style = 'light') {
-    if ('vibrate' in navigator) navigator.vibrate({ light: 10, medium: 20, heavy: 30 }[style] || 10);
+    const patterns = { light: 10, medium: 20, heavy: 30 };
+    if ('vibrate' in navigator) {
+        navigator.vibrate(patterns[style] || 10);
+    }
 }
 let toastTimeout = null;
 function showToast(message, duration = 3000) {
@@ -702,22 +776,33 @@ function initMap() {
             });
         });
 
+        // FIX: Conditionally add terrain based on device capability
+        const cockpitMapStyle = {
+            version: 8,
+            sources: {
+                'satellite': { type: 'raster', tiles: [CONFIG.SAT_TILES], tileSize: 256 },
+                'radar': { type: 'raster', tiles: [CONFIG.RADAR_TILE_URL], tileSize: 256 }
+            },
+            layers: [
+                { id: 'sat', type: 'raster', source: 'satellite', paint: { 'raster-saturation': -0.4 }},
+                { id: 'cockpit-radar', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.6 }}
+            ],
+            sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' }
+        };
+
+        // FIX: Only add terrain on capable devices
+        if (!deviceCapabilities.isLowEnd && !deviceCapabilities.hasReducedMotion) {
+            cockpitMapStyle.sources['terrain-source'] = { 
+                type: 'raster-dem', 
+                url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json', 
+                tileSize: 256 
+            };
+            cockpitMapStyle.terrain = { source: 'terrain-source', exaggeration: 1.1 };
+        }
+
         state.cockpitMap = new maplibregl.Map({
             container: 'cockpitMap',
-            style: {
-                version: 8,
-                sources: {
-                    'satellite': { type: 'raster', tiles: [CONFIG.SAT_TILES], tileSize: 256 },
-                    'radar': { type: 'raster', tiles: [CONFIG.RADAR_TILE_URL], tileSize: 256 },
-                    'terrain-source': { type: 'raster-dem', url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json', tileSize: 256 }
-                },
-                layers: [
-                    { id: 'sat', type: 'raster', source: 'satellite', paint: { 'raster-saturation': -0.4 }},
-                    { id: 'cockpit-radar', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.6 }}
-                ],
-                sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' },
-                terrain: { source: 'terrain-source', exaggeration: 1.1 }
-            },
+            style: cockpitMapStyle,
             center: [0, 0], zoom: 12, pitch: 85, maxPitch: 85, interactive: false
         });
     } catch (e) { console.error('Map init error:', e); }
@@ -767,7 +852,9 @@ async function fetchPlanes() {
             else { DOM.emptyState.classList.remove('show'); document.querySelector('.aircraft-count').style.display = 'block'; }
             
             if (count > 0 && !state.hasSeenPlaneTip) {
-                state.hasSeenPlaneTip = true; localStorage.setItem('pp-seen-plane-tip', 'true'); showToast('Tap a plane icon to enter cockpit view', 4000);
+                state.hasSeenPlaneTip = true; 
+                safeLocalStorageSet('pp-seen-plane-tip', 'true'); 
+                showToast('Tap a plane icon to enter cockpit view', 4000);
             }
             for (let [hex] of state.planesData) {
                 if (!activeHexes.has(hex)) {
@@ -804,30 +891,83 @@ function updateWeather(force = false) {
 }
 
 // === ANIMATION ===
+// FIX: Completely rewritten animation loop to properly stop when hidden and use separate update frequencies
 function animatePlanes() {
-    if (document.hidden) { requestAnimationFrame(animatePlanes); return; }
+    // FIX: Don't schedule next frame when document is hidden - stops the loop entirely
+    if (document.hidden) {
+        state.animationRunning = false;
+        return;
+    }
+    
     const now = Date.now();
-    if (now - state.lastAnimateTime < 33) { requestAnimationFrame(animatePlanes); return; }
+    
+    // Throttle animation frame rate
+    if (now - state.lastAnimateTime < CONFIG.ANIMATION_FRAME_MS) { 
+        requestAnimationFrame(animatePlanes); 
+        return; 
+    }
     state.lastAnimateTime = now;
-    if (state.mode === 'cockpit') updateCockpitView();
-    if (!state.map || !state.map.getSource('planes')) { requestAnimationFrame(animatePlanes); return; }
-    const planeFeatures = []; const trailFeatures = []; const predictionFeatures = [];
+    
+    // FIX: Throttle cockpit updates separately (less frequent = less GPU load)
+    if (state.mode === 'cockpit' && now - state.lastCockpitUpdateTime >= CONFIG.COCKPIT_UPDATE_MS) {
+        state.lastCockpitUpdateTime = now;
+        updateCockpitView();
+    }
+    
+    if (!state.map || !state.map.getSource('planes')) { 
+        requestAnimationFrame(animatePlanes); 
+        return; 
+    }
+    
+    // Calculate interpolated positions for all planes (always needed for smooth animation)
     state.planesData.forEach((p, hex) => {
         const progress = Math.min((now - p.startTime) / CONFIG.ANIMATION_DURATION, 1);
         p.currentLat = p.startLat + (p.targetLat - p.startLat) * progress;
         p.currentLon = p.startLon + (p.targetLon - p.startLon) * progress;
-        planeFeatures.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p.currentLon, p.currentLat] }, properties: { hex, rotation: p.track || 0, icon: getIconType(p.t, p.category), callsign: p.flight ? p.flight.trim() : (p.r || p.hex), type: getAircraftTypeName(p.t) 
-    }
-});
-        if (p.trail && p.trail.length > 1 && p.alt_baro !== 'ground') trailFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [...p.trail, [p.currentLon, p.currentLat]] }});
-        if (p.gs > 50 && p.alt_baro !== 'ground' && p.track !== undefined) {
-            predictionFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[p.currentLon, p.currentLat], getProjectedPoint(p.currentLat, p.currentLon, p.track, p.gs * CONFIG.KNOTS_TO_KMH * (60 / 3600))] }});
-        }
     });
-    state.map.getSource('planes').setData({ type: 'FeatureCollection', features: planeFeatures });
-    state.map.getSource('flight-trails').setData({ type: 'FeatureCollection', features: trailFeatures });
-    state.map.getSource('flight-predictions').setData({ type: 'FeatureCollection', features: predictionFeatures });
+    
+    // FIX: Throttle map source updates separately (expensive operation)
+    if (now - state.lastMapUpdateTime >= CONFIG.MAP_UPDATE_MS) {
+        state.lastMapUpdateTime = now;
+        
+        const planeFeatures = []; 
+        const trailFeatures = []; 
+        const predictionFeatures = [];
+        
+        state.planesData.forEach((p, hex) => {
+            planeFeatures.push({ 
+                type: 'Feature', 
+                geometry: { type: 'Point', coordinates: [p.currentLon, p.currentLat] }, 
+                properties: { 
+                    hex, 
+                    rotation: p.track || 0, 
+                    icon: getIconType(p.t, p.category), 
+                    callsign: p.flight ? p.flight.trim() : (p.r || p.hex), 
+                    type: getAircraftTypeName(p.t) 
+                }
+            });
+            if (p.trail && p.trail.length > 1 && p.alt_baro !== 'ground') {
+                trailFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [...p.trail, [p.currentLon, p.currentLat]] }});
+            }
+            if (p.gs > 50 && p.alt_baro !== 'ground' && p.track !== undefined) {
+                predictionFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[p.currentLon, p.currentLat], getProjectedPoint(p.currentLat, p.currentLon, p.track, p.gs * CONFIG.KNOTS_TO_KMH * (60 / 3600))] }});
+            }
+        });
+        
+        state.map.getSource('planes').setData({ type: 'FeatureCollection', features: planeFeatures });
+        state.map.getSource('flight-trails').setData({ type: 'FeatureCollection', features: trailFeatures });
+        state.map.getSource('flight-predictions').setData({ type: 'FeatureCollection', features: predictionFeatures });
+    }
+    
     requestAnimationFrame(animatePlanes);
+}
+
+// FIX: Function to start animation loop if not running
+function startAnimationLoop() {
+    if (!state.animationRunning) {
+        state.animationRunning = true;
+        requestAnimationFrame(animatePlanes);
+    }
 }
 
 // === COCKPIT MODE ===
@@ -839,7 +979,11 @@ function enterCockpitMode(hex) {
     let soundType = 'jet'; if (iconType === 'heli-icon') soundType = 'heli'; else if (iconType === 'plane-prop') soundType = 'prop';
     engineAudio.play(soundType);
     DOM.mainView.classList.add('hidden'); DOM.cockpitView.classList.add('active'); state.cockpitMap.resize();
-    if (!state.hasSeenCockpitTip) { state.hasSeenCockpitTip = true; localStorage.setItem('pp-seen-cockpit-tip', 'true'); setTimeout(() => showToast('Toggle sound for engine noise.', 4000), 800); }
+    if (!state.hasSeenCockpitTip) { 
+        state.hasSeenCockpitTip = true; 
+        safeLocalStorageSet('pp-seen-cockpit-tip', 'true'); 
+        setTimeout(() => showToast('Toggle sound for engine noise.', 4000), 800); 
+    }
     setTimeout(() => { if (state.mode === 'cockpit') document.getElementById('map').style.visibility = 'hidden'; }, 500);
 }
 function exitCockpitMode() {
@@ -873,7 +1017,16 @@ function updateCockpitView() {
     const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
     const zoom = Math.max(9, 16 - (alt / 6000));
     const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, Math.max(0.5, (17 - zoom) * 2.5));
-    state.cockpitMap.jumpTo({ center: target, zoom, pitch: 80, bearing: p.track || 0 });
+    
+    // FIX: Use easeTo instead of jumpTo for smoother transitions with less GPU strain
+    state.cockpitMap.easeTo({ 
+        center: target, 
+        zoom, 
+        pitch: 80, 
+        bearing: p.track || 0,
+        duration: CONFIG.COCKPIT_UPDATE_MS, // Match the update interval for smooth interpolation
+        easing: (t) => t // Linear easing for consistent motion
+    });
 
     const condition = DOM.wxCond.textContent.toLowerCase();
     const isBadWeather = condition.includes('rain') || condition.includes('snow') || condition.includes('storm') || condition.includes('cloud');
@@ -930,7 +1083,8 @@ function startApp() {
     }
     state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
     state.wxInterval = setInterval(() => updateWeather(), CONFIG.WX_POLL_MS);
-    requestAnimationFrame(animatePlanes);
+    // FIX: Use the new startAnimationLoop function
+    startAnimationLoop();
 }
 
 function quitApp() {
@@ -942,6 +1096,16 @@ function quitApp() {
     DOM.statusDisplay.textContent = 'Offline'; DOM.planeCount.textContent = '0';
 }
 function wakeApp() { if (state.initializing) return; document.getElementById('offlineOverlay').style.display = 'none'; startApp(); }
+
+// FIX: Cleanup function for reliable resource release
+function cleanup() {
+    if (state.wxInterval) { clearInterval(state.wxInterval); state.wxInterval = null; }
+    if (state.planeInterval) { clearInterval(state.planeInterval); state.planeInterval = null; }
+    if (state.watchId) { navigator.geolocation.clearWatch(state.watchId); state.watchId = null; }
+    if (state.map) { state.map.remove(); state.map = null; }
+    if (state.cockpitMap) { state.cockpitMap.remove(); state.cockpitMap = null; }
+    engineAudio.stop();
+}
 
 // --- EVENT LISTENERS ---
 
@@ -987,11 +1151,13 @@ document.getElementById('confirmQuitBtn').addEventListener('click', () => {
 });
 document.getElementById('wakeBtn').addEventListener('click', () => { haptic('medium'); wakeApp(); });
 
+// FIX: Improved visibility change handler that properly restarts animation
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         if (state.wxInterval) { clearInterval(state.wxInterval); state.wxInterval = null; }
         if (state.planeInterval) { clearInterval(state.planeInterval); state.planeInterval = null; }
         engineAudio.stop();
+        // Animation loop will stop itself when it checks document.hidden
     } else {
         const isOffline = document.getElementById('offlineOverlay').style.display === 'flex';
         if (state.map && !isOffline) {
@@ -1005,6 +1171,8 @@ document.addEventListener('visibilitychange', () => {
                     engineAudio.play(soundType);
                 }
             }
+            // FIX: Restart animation loop when page becomes visible
+            startAnimationLoop();
         }
     }
 });
@@ -1012,14 +1180,11 @@ document.addEventListener('visibilitychange', () => {
 let lastActivity = Date.now();
 setInterval(() => { if ((Date.now() - lastActivity) / 60000 > 30) { quitApp(); lastActivity = Date.now(); }}, 60000);
 ['click', 'touchstart', 'mousemove'].forEach(evt => document.addEventListener(evt, () => lastActivity = Date.now(), { passive: true }));
-window.addEventListener('beforeunload', () => {
-    if (state.wxInterval) clearInterval(state.wxInterval);
-    if (state.planeInterval) clearInterval(state.planeInterval);
-    if (state.watchId) navigator.geolocation.clearWatch(state.watchId);
-    if (state.map) state.map.remove();
-    if (state.cockpitMap) state.cockpitMap.remove();
-    engineAudio.stop();
-});
+
+// FIX: Use both beforeunload and pagehide for better mobile support
+window.addEventListener('beforeunload', cleanup);
+window.addEventListener('pagehide', cleanup);
+
 window.onload = startApp;
 </script>
 </body>
