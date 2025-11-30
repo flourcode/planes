@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0d0d0f">
     <meta name="apple-mobile-web-app-title" content="PlanePatrol">
     <title>PlanePatrol</title>
     <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
@@ -39,7 +40,8 @@
         color: var(--text-primary);
         font-family: 'Space Mono', monospace;
         overflow: hidden;
-        overscroll-behavior: none;
+        overscroll-behavior: none; /* Prevents pull-to-refresh */
+        touch-action: none; /* Optimizes touch for map dragging */
     }
 
     /* === VIEWS === */
@@ -51,8 +53,7 @@
         background: var(--bg); 
         opacity: 0; 
         pointer-events: none; 
-        visibility: hidden; /* Hides children from clicks */
-        /* Delay visibility hide until after opacity fade out */
+        visibility: hidden;
         transition: opacity 0.6s ease, visibility 0s linear 0.6s; 
     }
     
@@ -60,7 +61,6 @@
         opacity: 1; 
         pointer-events: auto; 
         visibility: visible; 
-        /* Show visibility immediately when becoming active */
         transition: opacity 0.6s ease, visibility 0s linear 0s; 
     }
 
@@ -115,60 +115,29 @@
     .empty-state.show { display: block; }
 
     .action-buttons { 
-        display: flex; 
-        gap: 12px; 
-        pointer-events: auto; 
-        z-index: 50; 
-        position: relative;
+        display: flex; gap: 12px; pointer-events: auto; z-index: 50; position: relative;
     }
     .action-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--surface); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--separator); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast); }
     .action-btn:active { transform: scale(0.92); }
     .action-btn:hover { background: var(--surface-elevated); }
     .action-btn.danger { background: rgba(255, 69, 58, 0.15); border-color: rgba(255, 69, 58, 0.2); color: var(--danger); }
-    
-    /* Radar Button Active State */
     .action-btn.radar-active { background: rgba(52, 199, 89, 0.2); border-color: rgba(52, 199, 89, 0.4); color: var(--success); }
-    
     .wx-text { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
 
     .range-group {
-        position: fixed;
-        right: 24px;
-        bottom: calc(150px + var(--safe-bottom));
-        display: flex;
-        flex-direction: column;
-        align-items: center; /* Centers the text above the pill */
-        gap: 6px;
-        z-index: 80;
-        pointer-events: none; /* Allows clicks to pass through the gaps */
+        position: fixed; right: 24px; bottom: calc(150px + var(--safe-bottom));
+        display: flex; flex-direction: column; align-items: center; gap: 6px; z-index: 80; pointer-events: none;
     }
-
     .range-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: var(--text-tertiary);
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        text-shadow: 0 1px 4px rgba(0,0,0,0.8); /* Ensures readability over map */
+        font-size: 10px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
-
     .range-selector {
-        background: var(--surface);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border: 1px solid var(--separator);
-        border-radius: 50px;
-        padding: 4px;
-        display: flex;
-        gap: 2px;
-        pointer-events: auto; /* Re-enable clicks for buttons */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        background: var(--surface); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+        border: 1px solid var(--separator); border-radius: 50px; padding: 4px; display: flex; gap: 2px; pointer-events: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     .range-opt {
-        background: none; border: none; color: var(--text-secondary);
-        font-family: inherit; font-size: 13px; font-weight: 600;
-        width: 36px; height: 36px; border-radius: 50%;
-        cursor: pointer; transition: all var(--transition-fast);
+        background: none; border: none; color: var(--text-secondary); font-family: inherit; font-size: 13px; font-weight: 600;
+        width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: all var(--transition-fast);
     }
     .range-opt.selected { background: var(--text-primary); color: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
@@ -221,28 +190,13 @@
     .crosshair svg path, .crosshair svg circle { stroke: rgba(232, 232, 235, 0.7); stroke-width: 1.5; fill: none; }
     .crosshair svg circle { fill: rgba(232, 232, 235, 0.7); }
 
-    /* Back Button (MOVED: Bottom Right) */
+    /* Back Button */
     .back-btn { 
-        position: fixed; 
-        bottom: calc(180px + var(--safe-bottom)); 
-        right: 24px; /* Right side for thumb access */
-        left: auto; transform: none; /* Reset center styles */
-        background: var(--surface); 
-        backdrop-filter: var(--blur); 
-        -webkit-backdrop-filter: var(--blur); 
-        border: 1px solid var(--separator); 
-        color: var(--text-primary); 
-        padding: 12px 24px; 
-        border-radius: 50px; 
-        font-family: 'Space Mono', monospace; 
-        font-size: 14px; 
-        font-weight: 700; 
-        cursor: pointer; 
-        z-index: 100; 
-        pointer-events: auto; 
-        display: flex; align-items: center; gap: 8px; 
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3); 
-        transition: transform var(--transition-fast), background var(--transition-fast); 
+        position: fixed; bottom: calc(180px + var(--safe-bottom)); right: 24px; left: auto; transform: none; 
+        background: var(--surface); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); 
+        border: 1px solid var(--separator); color: var(--text-primary); padding: 12px 24px; border-radius: 50px; 
+        font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; cursor: pointer; z-index: 100; pointer-events: auto; 
+        display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: transform var(--transition-fast), background var(--transition-fast); 
     }
     .back-btn:active { transform: scale(0.95); }
     .back-btn:hover { background: var(--surface-elevated); }
@@ -257,36 +211,25 @@
     /* === TOAST === */
     .toast { position: fixed; bottom: calc(100px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(100px); background: var(--surface-elevated); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--separator); border-radius: 16px; padding: 14px 24px; font-size: 14px; font-weight: 500; color: var(--text-primary); z-index: 9000; opacity: 0; transition: all var(--transition-medium); pointer-events: none; text-align: center; max-width: 90vw; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-	/* === CUSTOM MODAL === */
+
+    /* === CUSTOM MODAL === */
     .modal-overlay {
-        position: fixed; inset: 0; z-index: 10000;
-        background: rgba(0, 0, 0, 0.6); 
+        position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.6); 
         backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
-    
     .modal-content {
-        background: var(--surface-elevated); 
-        border: 1px solid var(--separator);
-        padding: 24px; 
-        border-radius: 24px; 
-        width: 85%; max-width: 320px;
-        text-align: center; 
-        transform: scale(0.95); 
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        background: var(--surface-elevated); border: 1px solid var(--separator); padding: 24px; border-radius: 24px; 
+        width: 85%; max-width: 320px; text-align: center; transform: scale(0.95); 
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
     .modal-overlay.active .modal-content { transform: scale(1); }
-    
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
     .modal-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5; }
-    
     .modal-actions { display: flex; gap: 12px; }
     .modal-btn {
-        flex: 1; padding: 14px; border-radius: 50px; border: none; font-family: inherit;
-        font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s;
+        flex: 1; padding: 14px; border-radius: 50px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s;
     }
     .modal-btn:active { transform: scale(0.95); }
     .modal-btn.secondary { background: rgba(255,255,255,0.08); color: var(--text-primary); }
@@ -309,7 +252,8 @@
         <div class="offline-title">SYSTEMS OFFLINE</div>
         <button class="wake-btn" id="wakeBtn" aria-label="Resume tracking">Resume Tracking</button>
     </div>
-	<div class="modal-overlay" id="confirmModal">
+    
+    <div class="modal-overlay" id="confirmModal">
         <div class="modal-content">
             <div class="modal-title">Pause Tracking?</div>
             <div class="modal-desc">This will stop GPS and data fetching to save battery.</div>
@@ -322,46 +266,31 @@
 
     <div id="main-view">
         <div id="map"></div>
-        
         <div class="hud">
             <div class="hud-top">
                 <div class="location-block">
                     <div class="location-coords" id="locationDisplay">--</div>
                     <div class="location-status">
-                        <span class="status-dot"></span>
-                        <span id="statusDisplay">Acquiring</span>
-                        <span class="location-source" id="locationSource">GPS</span>
+                        <span class="status-dot"></span><span id="statusDisplay">Acquiring</span><span class="location-source" id="locationSource">GPS</span>
                     </div>
                 </div>
-                
                 <div class="weather-block">
                     <div class="weather-temp" id="wxTemp">--°</div>
-                    <div class="weather-details">
-                        <span id="wxCond">Loading</span> · <span id="wxWind">--</span> kt
-                    </div>
+                    <div class="weather-details"><span id="wxCond">Loading</span> · <span id="wxWind">--</span> kt</div>
                 </div>
             </div>
-
             <div class="hud-bottom">
                 <div class="aircraft-count">
                     <div class="count-number" id="planeCount">0</div>
                     <div class="count-label">Aircraft</div>
                 </div>
-                <div class="empty-state" id="emptyState">
-                    No aircraft in range.
-                </div>
-
+                <div class="empty-state" id="emptyState">No aircraft in range.</div>
                 <div class="action-buttons">
-                    <button class="action-btn radar-active" id="radarBtn" aria-label="Toggle Weather Radar">
-                        <span class="wx-text">WX</span>
-                    </button>
-                    <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking" style="font-size: 24px;">
-                        ⏻
-                    </button>
+                    <button class="action-btn radar-active" id="radarBtn" aria-label="Toggle Weather Radar"><span class="wx-text">WX</span></button>
+                    <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking" style="font-size: 24px;">⏻</button>
                 </div>
             </div>
         </div>
-
         <div class="range-group">
             <div class="range-label">Radar Range</div>
             <div class="range-selector">
@@ -371,11 +300,7 @@
                 <button class="range-opt" data-range="20">20</button>
             </div>
         </div>
-
-        <button class="reset-btn" id="resetBtn" aria-label="Reset to GPS location" style="font-size: 26px; padding-bottom: 2px;">
-            ↻
-        </button>
-
+        <button class="reset-btn" id="resetBtn" aria-label="Reset to GPS location" style="font-size: 26px; padding-bottom: 2px;">↻</button>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -412,14 +337,12 @@
                     </button>
                 </div>
             </div>
-            
             <button class="back-btn" id="backBtn" aria-label="Back to radar view">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
                 BACK
             </button>
-
             <div class="cockpit-bottom">
                 <div class="data-card">
                     <div class="data-label">Altitude</div>
@@ -462,26 +385,24 @@ const CONFIG = {
 };
 
 const AIRCRAFT_TYPES = {
-    "A318": "Airbus A318", "A319": "Airbus A319", "A320": "Airbus A320", "A20N": "Airbus A320neo",
-    "A321": "Airbus A321", "A21N": "Airbus A321neo", "A332": "Airbus A330-200", "A333": "Airbus A330-300",
-    "A338": "Airbus A330-800", "A339": "Airbus A330-900", "A343": "Airbus A340-300", "A346": "Airbus A340-600",
-    "A359": "Airbus A350-900", "A35K": "Airbus A350-1000", "A388": "Airbus A380", "A306": "Airbus A300-600",
-    "A3ST": "Airbus Beluga", "BCS1": "Airbus A220-100", "BCS3": "Airbus A220-300",
-    "B737": "Boeing 737-700", "B738": "Boeing 737-800", "B739": "Boeing 737-900",
-    "B38M": "Boeing 737 MAX 8", "B39M": "Boeing 737 MAX 9", "B744": "Boeing 747-400", "B748": "Boeing 747-8",
-    "B752": "Boeing 757-200", "B753": "Boeing 757-300", "B763": "Boeing 767-300", "B764": "Boeing 767-400",
-    "B772": "Boeing 777-200", "B77L": "Boeing 777-200LR", "B77W": "Boeing 777-300ER", "B77X": "Boeing 777X",
-    "B788": "Boeing 787-8", "B789": "Boeing 787-9", "B78X": "Boeing 787-10",
-    "MD11": "McDonnell Douglas MD-11", "DC10": "McDonnell Douglas DC-10", "B712": "Boeing 717-200",
-    "E170": "Embraer E170", "E75L": "Embraer E175", "E190": "Embraer E190", "E195": "Embraer E195",
-    "CRJ1": "CRJ-100", "CRJ2": "CRJ-200", "CRJ7": "CRJ-700", "CRJ9": "CRJ-900", "CL60": "Challenger 600",
-    "DH8D": "Q400", "AT72": "ATR 72", "C172": "Cessna 172", "SR22": "Cirrus SR22"
+    "A318": "Airbus A318", "A319": "Airbus A319", "A320": "Airbus A320", "A20N": "Airbus A320neo", "A321": "Airbus A321", "A21N": "Airbus A321neo", "A332": "Airbus A330-200", "A333": "Airbus A330-300", "A338": "Airbus A330-800", "A339": "Airbus A330-900", "A343": "Airbus A340-300", "A346": "Airbus A340-600", "A359": "Airbus A350-900", "A35K": "Airbus A350-1000", "A388": "Airbus A380", "A306": "Airbus A300-600", "A3ST": "Airbus Beluga", "BCS1": "Airbus A220-100", "BCS3": "Airbus A220-300",
+    "B737": "Boeing 737-700", "B738": "Boeing 737-800", "B739": "Boeing 737-900", "B38M": "Boeing 737 MAX 8", "B39M": "Boeing 737 MAX 9", "B744": "Boeing 747-400", "B748": "Boeing 747-8", "B752": "Boeing 757-200", "B753": "Boeing 757-300", "B763": "Boeing 767-300", "B764": "Boeing 767-400", "B772": "Boeing 777-200", "B77L": "Boeing 777-200LR", "B77W": "Boeing 777-300ER", "B77X": "Boeing 777X", "B788": "Boeing 787-8", "B789": "Boeing 787-9", "B78X": "Boeing 787-10",
+    "MD11": "McDonnell Douglas MD-11", "DC10": "McDonnell Douglas DC-10", "B712": "Boeing 717-200", "B703": "Boeing 707 / KC-135", "B722": "Boeing 727-200",
+    "E170": "Embraer E170", "E75L": "Embraer E175", "E75S": "Embraer E175", "E190": "Embraer E190", "E195": "Embraer E195", "E290": "Embraer E190-E2", "E295": "Embraer E195-E2", "ERJ3": "Embraer ERJ-135", "ERJ4": "Embraer ERJ-145", "CRJ1": "CRJ-100", "CRJ2": "CRJ-200", "CRJ7": "CRJ-700", "CRJ9": "CRJ-900", "CL60": "Challenger 600", "DH8A": "Dash 8-100", "DH8B": "Dash 8-200", "DH8C": "Dash 8-300", "DH8D": "Q400", "AT72": "ATR 72", "AT75": "ATR 72-500", "AT76": "ATR 72-600", "AT45": "ATR 42-500", "AT46": "ATR 42-600",
+    "E50P": "Phenom 100", "E55P": "Phenom 300", "LJ35": "Learjet 35", "LJ45": "Learjet 45", "LJ60": "Learjet 60", "LJ75": "Learjet 75", "H25B": "Hawker 800XP", "GALX": "Gulfstream G200", "EA50": "Eclipse 500", "GLF4": "Gulfstream IV", "GLF5": "Gulfstream V", "GLF6": "Gulfstream G650", "G280": "Gulfstream G280", "C510": "Citation Mustang", "C525": "Citation Jet", "C56X": "Citation Excel", "C680": "Citation Sovereign", "C700": "Citation Longitude", "CL30": "Challenger 300", "CL35": "Challenger 350", "GLEX": "Global Express", "GL75": "Global 7500", "FA7X": "Falcon 7X", "FA8X": "Falcon 8X", "F2TH": "Falcon 2000", "PC24": "Pilatus PC-24", "HDJT": "HondaJet",
+    "TBM7": "TBM 700", "TBM8": "TBM 850", "TBM9": "TBM 900", "BE9L": "King Air C90", "BE20": "King Air 200", "B350": "King Air 350", "PC12": "Pilatus PC-12",
+    "C150": "Cessna 150", "C152": "Cessna 152", "C172": "Cessna 172", "C182": "Cessna 182", "C208": "Cessna Caravan", "PA28": "Piper Cherokee", "PA34": "Piper Seneca", "PA44": "Piper Seminole", "SR20": "Cirrus SR20", "SR22": "Cirrus SR22", "SF50": "Vision Jet", "BE36": "Bonanza", "BE58": "Baron", "DA40": "Diamond Star", "DA42": "Twin Star", "DA62": "Diamond DA62",
+    "RV6": "Van's RV-6", "RV7": "Van's RV-7", "RV8": "Van's RV-8", "RV10": "Van's RV-10", "RV12": "Van's RV-12", "ICON": "ICON A5",
+    "C130": "C-130 Hercules", "C30J": "C-130J Super Hercules", "C17": "C-17 Globemaster", "K35R": "KC-135 Stratotanker", "F16": "F-16 Fighting Falcon", "F18": "F/A-18 Hornet", "F22": "F-22 Raptor", "F35": "F-35 Lightning II", "TEX2": "T-6 Texan II", "T38": "T-38 Talon", "T45": "T-45 Goshawk", "L39": "L-39 Albatros", "C5": "C-5 Galaxy", "C5M": "C-5M Super Galaxy", "A400": "A400M Atlas", "K46": "KC-46 Pegasus",
+    "B52": "B-52 Stratofortress", "B1": "B-1 Lancer", "B2": "B-2 Spirit", "A10": "A-10 Thunderbolt II", "E3TF": "E-3 Sentry (AWACS)", "E3CF": "E-3 Sentry (AWACS)", "E6": "E-6 Mercury", "E2": "E-2 Hawkeye", "P8": "P-8 Poseidon", "C135": "RC-135 Rivet Joint", "U2": "U-2 Dragon Lady",
+    "R44": "Robinson R44", "R66": "Robinson R66", "B06": "Bell 206", "B407": "Bell 407", "EC35": "H135/EC135", "S76": "Sikorsky S-76", "S92": "Sikorsky S-92", "AW13": "AW139", "H64": "AH-64 Apache", "H47": "CH-47 Chinook", "H53": "CH-53 Sea Stallion", "V22": "V-22 Osprey", "TIGR": "Eurocopter Tiger", "NH90": "NH90", "UH1": "UH-1 Huey", "UH1N": "UH-1N Twin Huey", "UH1Y": "UH-1Y Venom", "GAZL": "Gazelle", "LYNX": "AW159 Wildcat", "H500": "MD 500 / Little Bird", "EXPL": "MD Explorer", "B429": "Bell 429", "EN48": "Enstrom 480", "EH10": "AW101 Merlin", "AS32": "AS332 Super Puma", "EC25": "EC225 Super Puma", "AS65": "AS365 Dauphin", "H60": "Black Hawk / Seahawk", "EC45": "H145 / Lakota", "AS50": "H125 / AS350"
 };
 
-// === ASMR AUDIO ENGINE ===
+// === ASMR AUDIO ENGINE (Optimized) ===
 class EngineAudio {
     constructor() {
         this.ctx = null; this.activeNodes = []; this.masterGain = null; this.fading = false; this.stopTimer = null;
+        this.whiteBuffer = null; this.brownBuffer = null;
     }
     init() {
         if (!this.ctx) {
@@ -491,6 +412,9 @@ class EngineAudio {
             compressor.threshold.value = -10; compressor.ratio.value = 12;
             compressor.attack.value = 0; compressor.release.value = 0.25;
             this.masterGain.connect(compressor); compressor.connect(this.ctx.destination);
+            // Pre-generate buffers once to save CPU
+            this.whiteBuffer = this.createWhiteNoise();
+            this.brownBuffer = this.createBrownNoise();
         }
         if (this.ctx.state === 'suspended') { this.ctx.resume(); }
     }
@@ -529,7 +453,7 @@ class EngineAudio {
             nodes.push(lfo, lfoGain, panner);
         }
         if (type === 'heli') {
-            const noise = this.ctx.createBufferSource(); noise.buffer = this.createWhiteNoise(); noise.loop = true;
+            const noise = this.ctx.createBufferSource(); noise.buffer = this.whiteBuffer; noise.loop = true;
             const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 180; filter.Q.value = 2;
             const modulator = this.ctx.createOscillator(); modulator.frequency.value = 5.5; modulator.type = 'sawtooth';
             const chopper = this.ctx.createGain(); chopper.gain.value = 0;
@@ -542,17 +466,17 @@ class EngineAudio {
             const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 160;
             const droneGain = this.ctx.createGain(); droneGain.gain.value = 0.15;
             osc1.connect(filter); osc2.connect(filter); filter.connect(droneGain).connect(this.masterGain);
-            const noise = this.ctx.createBufferSource(); noise.buffer = this.createBrownNoise(); noise.loop = true;
+            const noise = this.ctx.createBufferSource(); noise.buffer = this.brownBuffer; noise.loop = true;
             const noiseGain = this.ctx.createGain(); noiseGain.gain.value = 0.1; noise.connect(noiseGain).connect(this.masterGain);
             osc1.start(); osc2.start(); noise.start(); nodes.push(osc1, osc2, noise, filter, droneGain, noiseGain);
         } else {
             const sub = this.ctx.createOscillator(); sub.type = 'sine'; sub.frequency.value = 50;
             const subGain = this.ctx.createGain(); subGain.gain.value = 0.2; sub.connect(subGain).connect(this.masterGain);
-            const roar = this.ctx.createBufferSource(); roar.buffer = this.createBrownNoise(); roar.loop = true;
+            const roar = this.ctx.createBufferSource(); roar.buffer = this.brownBuffer; roar.loop = true;
             const roarFilter = this.ctx.createBiquadFilter(); roarFilter.type = 'lowpass'; roarFilter.frequency.value = 400;
             const roarGain = this.ctx.createGain(); roarGain.gain.value = 0.6;
             roar.connect(roarFilter).connect(roarGain).connect(this.masterGain);
-            const hiss = this.ctx.createBufferSource(); hiss.buffer = this.createWhiteNoise(); hiss.loop = true;
+            const hiss = this.ctx.createBufferSource(); hiss.buffer = this.whiteBuffer; hiss.loop = true;
             const hissFilter = this.ctx.createBiquadFilter(); hissFilter.type = 'highpass'; hissFilter.frequency.value = 3000;
             const hissGain = this.ctx.createGain(); hissGain.gain.value = 0.03;
             hiss.connect(hissFilter).connect(hissGain).connect(this.masterGain);
@@ -594,6 +518,7 @@ const state = {
     radarEnabled: true, soundEnabled: false,
     watchId: null, isFetchingPlanes: false, hasLockedLocation: false,
     cachedStationUrl: null, lastAnimateTime: 0, initializing: false,
+    abortController: null, // Network optimization
     hasSeenPlaneTip: localStorage.getItem('pp-seen-plane-tip') === 'true',
     hasSeenCockpitTip: localStorage.getItem('pp-seen-cockpit-tip') === 'true'
 };
@@ -652,12 +577,28 @@ function getAircraftTypeName(typeCode) {
 function getIconType(t, category) {
     if (!t) return 'plane-jet';
     const type = t.toUpperCase();
+    
+    // 1. Helicopters (Category check or explicit type)
     if (category === 'A7' || category === 'H' || type === 'HEL' || /^(H1|H4|H6|EC|AS|AW|UH|R4|R6)/.test(type)) return 'heli-icon';
+
+    // 2. Fighters (Fast movers)
     if (/^(F1|F2|F3|T3|T4|EU|MI|SU|GR|J\d)/.test(type)) return 'plane-fighter';
-    if (/^(B7[478]|A3[3458]|DC10|MD11|C5|C17|IL76)/.test(type)) return 'plane-heavy';
+
+    // 3. Heavies (Fixed: Separated "Exact" codes from "Prefix" codes)
+    // Exact match for military transports (prevents C172 or C500 collision)
+    if (type === 'C5' || type === 'C5M' || type === 'C17') return 'plane-heavy';
+    
+    // Prefix match for widebodies (B74*, A38*, etc.)
+    if (/^(B7[478]|A3[3458]|DC10|MD11|IL76|AN12|AN22)/.test(type)) return 'plane-heavy';
+
+    // 4. Props (Cessna, Piper, ATR, Dash8, Beechcraft)
+    // Checks for C1*, PA*, AT*, DH*, BE*, P12, TBM, SR*
     if (/^(C1[578]|C20|PA|AT|DH|BE|PC|TBM|SR|DA|RV)/.test(type)) return 'plane-prop';
+
+    // 5. Default to standard jet (A320, B737, CRJ, ERJ, Citations, etc.)
     return 'plane-jet';
 }
+
 function getFlightPhase(p) {
     const alt = p.alt_baro === 'ground' ? 0 : (p.alt_baro || 0); const gs = p.gs || 0; const vs = p.baro_rate || 0;
     if (p.alt_baro === 'ground' || alt < 100) return gs < 5 ? 'ground' : (gs < 30 ? 'ground' : 'takeoff');
@@ -677,110 +618,79 @@ function formatVerticalSpeed(vs) {
     return vs > 100 ? { value: `+${rounded}`, trend: 'climbing', arrow: '↑' } : { value: `${rounded}`, trend: 'descending', arrow: '↓' };
 }
 
+// === MAP INITIALIZATION ===
 function initMap() {
     try {
         state.map = new maplibregl.Map({
             container: 'map',
             style: {
                 version: 8,
-                // Ensure glyphs are loaded for the text labels
                 glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
                 sources: { 'osm': { type: 'raster', tiles: [CONFIG.MAP_TILES], tileSize: 256 }},
                 layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
             },
-            center: [state.lon || -98.5, state.lat || 39.8], zoom: 11, attributionControl: false
+            center: [state.lon || -98.5, state.lat || 39.8], zoom: 12, attributionControl: false
         });
 
         state.map.on('load', () => {
-            // 1. Add Sources
             state.map.addSource('radar', { type: 'raster', tiles: [CONFIG.RADAR_TILE_URL], tileSize: 256 });
             state.map.addSource('planes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
             state.map.addSource('flight-trails', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
             state.map.addSource('flight-predictions', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
             state.map.addSource('user-location', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
 
-            // 2. Add Radar Layer
             state.map.addLayer({ id: 'radar-layer', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.4 }});
 
-            // 3. Robust Icon Loader (Fixes the invisible planes)
             const iconColor = "#ebffeb";
             const loadIcon = (name, svg) => {
                 const img = new Image(64, 64);
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 64;
-                    canvas.height = 64;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, 64, 64);
-                    if (!state.map.hasImage(name)) {
-                        state.map.addImage(name, ctx.getImageData(0, 0, 64, 64), { pixelRatio: 2 });
-                    }
+                    const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, 64, 64);
+                    if (!state.map.hasImage(name)) state.map.addImage(name, ctx.getImageData(0, 0, 64, 64), { pixelRatio: 2 });
                 };
-                // Use encodeURIComponent instead of btoa for safer SVG handling
                 img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
             };
 
-            // Load Icons
             loadIcon('plane-jet', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -10 110 135"><path fill="${iconColor}" d="m44.6 80.1c-0.3-4.7-0.6-13.2-1-20.5-0-0.6-0.3-1.2-0.9-1.6-0.5-0.4-1.2-0.5-1.8-0.4-7.4 1.8-28.1 6.8-28.1 6.8-0.5 0.1-1.1 0-1.5-0.3-0.4-0.3-0.7-0.8-0.7-1.4v-3.7c0-1.7 0.9-3.3 2.4-4.2 0 0 18.3-10.2 26.2-14.7 2.2-1.2 3.5-3.5 3.5-6-0.1-8 0.2-13.4 1-18 0.1-0.3 0.2-0.7 0.3-1 0 0 2.4-9 5.5-9s5.5 9 5.5 9c0.1 0.3 0.2 0.7 0.3 1 0.8 4.6 1 10 1 18-0 2.5 1.3 4.8 3.5 6 7.9 4.4 26.2 14.7 26.2 14.7 1.5 0.8 2.4 2.4 2.4 4.2v3.7c0 0.5-0.2 1-0.7 1.4-0.4 0.3-1 0.4-1.5 0.3 0 0-20.7-5-28.1-6.8-0.6-0.2-1.3 0-1.8 0.4-0.5 0.4-0.8 1-0.9 1.6-0.3 7.3-0.7 15.9-1 20.5l11.1 7.3c0.4 0.3 0.7 0.7 0.8 1.1l0.4 2c0.1 0.3-0 0.6-0.3 0.9-0.2 0.2-0.5 0.3-0.8 0.3l-12.7-1.8c-0.1 0.2-0.3 0.5-0.5 0.7l-1.7 2.4c-0.3 0.5-0.8 0.7-1.4 0.7-0.1 0-0.2-0-0.3-0s-0.2 0-0.3 0c-0.6 0-1.1-0.3-1.4-0.7l-1.7-2.4c-0.2-0.2-0.3-0.5-0.5-0.7l-12.7 1.8c-0.3 0-0.6-0.1-0.8-0.3-0.2-0.2-0.3-0.5-0.3-0.9l0.4-2c0.1-0.5 0.4-0.9 0.8-1.1l11.1-7.3z"/></svg>`);
             loadIcon('plane-fighter', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="${iconColor}" d="M50 5 L60 30 L95 70 L95 80 L60 60 L60 85 L70 95 L30 95 L40 85 L40 60 L5 80 L5 70 L40 30 Z"/></svg>`);
             loadIcon('plane-heavy', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 120 120"><path fill="${iconColor}" d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/></svg>`);
             loadIcon('plane-prop', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="${iconColor}" d="M96.5,32.5c-0.2-0.9-3.2-0.7-4.1-0.8c-1-0.1-22.5-0.6-22.5-0.6l-15.1,0.5c0,0-0.1-8-0.8-9.9c-0.5-1.3-0.9-2.2-2.2-2.1l-0.2,0c-0.4-1.8-1.2-3-1.6-3s-1.2,1.3-1.6,3l-0.2,0c-1.3-0.1-1.7,0.8-2.2,2.1c-0.7,1.8-0.8,9.9-0.8,9.9l-15.1-0.5c0,0-21.4,0.6-22.5,0.6c-1,0.1-3.9-0.1-4.1,0.8c-0.3,1.2-0.1,4.6-0.1,5.9c0,0.9,0,3.6,0,3.6h2l24.7,4.4L45.7,47h0.1L48,69.8c0,0-9.7,1-10.4,1c-0.8,0.1-1.3,0.2-1.6,0.4c-0.3,0.2-0.5,0.5-0.6,0.8c-0.1,0.3,0.1,3.6,0.1,4c0,0.4,0.2,0.9,0.6,1.3c0.4,0.4,0.9,0.8,1.7,0.9c0.8,0.1,9.4,1.4,9.5,1.4c0.1,0,1.8-3,1.8-3l1,6.9l1-6.9c0,0,1.7,3,1.8,3s8.7-1.3,9.5-1.4c0.7-0.1,1.3-0.4,1.7-0.9c0.4-0.4,0.6-0.9,0.6-1.3c0-0.4,0.2-3.7,0.1-4c-0.1-0.3-0.3-0.6-0.6-0.8c-0.3-0.2-0.8-0.4-1.6-0.5C61.6,70.8,52,69.7,52,69.7l2.4-22.9l15.4-0.5L94.5,42h2c0,0,0-2.7,0-3.6C96.6,37.1,96.7,33.7,96.5,32.5z"/></svg>`);
             loadIcon('heli-icon', `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-42.35 -84.7 931.7 1143.45"><g transform="rotate(0 423.5 487)"><path fill="${iconColor}" d="M662 55l-125 125c-36,-185 -188,-171 -217,11l-136 -136c-19,-19 -46,8 -26,27l158 159c0,45 8,91 29,131l-187 188c-20,19 7,46 26,27l183 -182c7,9 16,16 25,21l0 253 -115 77 0 44 121 -54 64 0 120 54 0 -44 -114 -77 0 -253c6,-4 13,-9 19,-15l175 176c19,19 46,-8 27,-27l-179 -179c26,-45 35,-101 33,-152l146 -147c19,-19 -8,-46 -27,-27z"/></g></svg>`);
 
-            // 4. Helper Layers (Location, Trails, etc.)
             state.map.addLayer({ id: 'user-location-dot', type: 'circle', source: 'user-location', paint: { 'circle-radius': 20, 'circle-color': '#ebffeb80' }});
             state.map.addLayer({ id: 'flight-trails-layer', type: 'line', source: 'flight-trails', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#ebffeb80', 'line-width': 2, 'line-blur': 1 }});
             state.map.addLayer({ id: 'flight-predictions-layer', type: 'line', source: 'flight-predictions', layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': '#ebffeb80', 'line-width': 2, 'line-dasharray': [2, 4] }});
             
-            // 5. Plane Icon Layer (MUST be added before labels)
             state.map.addLayer({
                 id: 'planes-layer', type: 'symbol', source: 'planes',
                 layout: { 
                     'icon-image': ['get', 'icon'], 
-                    'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.6, 11, 0.8, 13, 1], 
-                    'icon-allow-overlap': true, 
-                    'icon-ignore-placement': true, 
-                    'icon-rotate': ['get', 'rotation'], 
-                    'icon-rotation-alignment': 'map' 
+                    'icon-size': ['interpolate', ['linear'], ['zoom'], 9, 0.9, 11, 1.2, 13, 1.5], 
+                    'icon-allow-overlap': true, 'icon-ignore-placement': true, 
+                    'icon-rotate': ['get', 'rotation'], 'icon-rotation-alignment': 'map' 
                 },
-                paint: { 'icon-opacity': 0.85 }
+                paint: { 'icon-opacity': 0.95 }
             });
 
-            // 6. Label Layer (Callsigns + Lead Line)
             state.map.addLayer({
-                id: 'planes-labels',
-                type: 'symbol',
-                source: 'planes',
-                minzoom: 4, 
+                id: 'planes-labels', type: 'symbol', source: 'planes', minzoom: 4, 
                 layout: {
                     'text-field': ['format',
                         '|\n', { 'font-scale': 0.8 },
-                        ['get', 'callsign'], {}
+                        ['get', 'callsign'], {},
+                        '\n', {},
+                        ['get', 'type'], { 'font-scale': 0.75 }
                     ],
-                    // Noto Sans Bold is reliable on MapLibre default glyphs
-                    'text-font': ['Noto Sans Bold'], 
-                    'text-size': 10,
-                    'text-transform': 'uppercase',
-                    'text-offset': [0, 0.8], // Push text down below the icon
-                    'text-anchor': 'top',
-                    'text-allow-overlap': true,   // Critical: Prevents hiding due to crowding
-                    'text-ignore-placement': true // Critical: Ignores placement of other icons
+                    'text-font': ['Noto Sans Bold'], 'text-size': 10, 'text-transform': 'uppercase',
+                    'text-offset': [0, 1.5], 'text-anchor': 'top', 'text-allow-overlap': true, 'text-ignore-placement': true
                 },
-                paint: {
-                    'text-color': 'rgba(245, 245, 247, 0.65)', 
-                    'text-halo-color': 'rgba(0,0,0,0.95)',
-                    'text-halo-width': 2,
-                    'text-halo-blur': 0.5
-                }
+                paint: { 'text-color': 'rgba(245, 245, 247, 0.65)', 'text-halo-color': 'rgba(0,0,0,0.95)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
             });
 
-            // Interactions
-            state.map.on('click', 'planes-layer', (e) => {
-                if (e.features.length > 0) { haptic('light'); enterCockpitMode(e.features[0].properties.hex); }
-            });
+            state.map.on('click', 'planes-layer', (e) => { if (e.features.length > 0) { haptic('light'); enterCockpitMode(e.features[0].properties.hex); }});
             state.map.on('mouseenter', 'planes-layer', () => state.map.getCanvas().style.cursor = 'pointer');
             state.map.on('mouseleave', 'planes-layer', () => state.map.getCanvas().style.cursor = '');
-
             state.map.on('click', (e) => {
                 const features = state.map.queryRenderedFeatures(e.point, { layers: ['planes-layer'] });
                 if (features.length > 0) return;
@@ -792,7 +702,6 @@ function initMap() {
             });
         });
 
-        // Cockpit Map Init
         state.cockpitMap = new maplibregl.Map({
             container: 'cockpitMap',
             style: {
@@ -811,7 +720,6 @@ function initMap() {
             },
             center: [0, 0], zoom: 12, pitch: 85, maxPitch: 85, interactive: false
         });
-
     } catch (e) { console.error('Map init error:', e); }
 }
 function updateUserLocation(lat, lon) {
@@ -819,13 +727,15 @@ function updateUserLocation(lat, lon) {
     state.map.getSource('user-location').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }}] });
 }
 
-// === DATA FETCHING ===
+// === DATA FETCHING (Optimized) ===
 async function fetchPlanes() {
     if (!state.lat || state.isFetchingPlanes) return;
     state.isFetchingPlanes = true;
+    if (state.abortController) state.abortController.abort(); // Cancel previous request
+    state.abortController = new AbortController();
     try {
         const url = `${CONFIG.API_PLANES}${state.lat}/${state.lon}/${state.radius}`;
-        const res = await fetch(url);
+        const res = await fetch(url, { signal: state.abortController.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const now = Date.now();
@@ -866,9 +776,10 @@ async function fetchPlanes() {
                 }
             }
         }
-    } catch (e) { console.error('Plane fetch error:', e); } finally { state.isFetchingPlanes = false; }
+    } catch (e) { 
+        if (e.name !== 'AbortError') console.error('Plane fetch error:', e); 
+    } finally { state.isFetchingPlanes = false; }
 }
-
 function updateWeather(force = false) {
     if (!state.lat || !state.lon) return;
     const now = Date.now();
@@ -905,7 +816,9 @@ function animatePlanes() {
         const progress = Math.min((now - p.startTime) / CONFIG.ANIMATION_DURATION, 1);
         p.currentLat = p.startLat + (p.targetLat - p.startLat) * progress;
         p.currentLon = p.startLon + (p.targetLon - p.startLon) * progress;
-        planeFeatures.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p.currentLon, p.currentLat] }, properties: { hex, rotation: p.track || 0, icon: getIconType(p.t, p.category), callsign: p.flight ? p.flight.trim() : (p.r || p.hex)}});
+        planeFeatures.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [p.currentLon, p.currentLat] }, properties: { hex, rotation: p.track || 0, icon: getIconType(p.t, p.category), callsign: p.flight ? p.flight.trim() : (p.r || p.hex), type: getAircraftTypeName(p.t) 
+    }
+});
         if (p.trail && p.trail.length > 1 && p.alt_baro !== 'ground') trailFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [...p.trail, [p.currentLon, p.currentLat]] }});
         if (p.gs > 50 && p.alt_baro !== 'ground' && p.track !== undefined) {
             predictionFeatures.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [[p.currentLon, p.currentLat], getProjectedPoint(p.currentLat, p.currentLon, p.track, p.gs * CONFIG.KNOTS_TO_KMH * (60 / 3600))] }});
@@ -926,7 +839,7 @@ function enterCockpitMode(hex) {
     let soundType = 'jet'; if (iconType === 'heli-icon') soundType = 'heli'; else if (iconType === 'plane-prop') soundType = 'prop';
     engineAudio.play(soundType);
     DOM.mainView.classList.add('hidden'); DOM.cockpitView.classList.add('active'); state.cockpitMap.resize();
-    if (!state.hasSeenCockpitTip) { state.hasSeenCockpitTip = true; localStorage.setItem('pp-seen-cockpit-tip', 'true'); setTimeout(() => showToast('Locked to aircraft. Toggle sound for engine noise.', 4000), 800); }
+    if (!state.hasSeenCockpitTip) { state.hasSeenCockpitTip = true; localStorage.setItem('pp-seen-cockpit-tip', 'true'); setTimeout(() => showToast('Toggle sound for engine noise.', 4000), 800); }
     setTimeout(() => { if (state.mode === 'cockpit') document.getElementById('map').style.visibility = 'hidden'; }, 500);
 }
 function exitCockpitMode() {
