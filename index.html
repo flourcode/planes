@@ -1068,12 +1068,8 @@
                             <path d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/>
                         </svg>
                     </div>
-                    <button class="sound-toggle-btn" id="cockpitSoundToggle" aria-label="Toggle engine sound">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-                        </svg>
+                    <button class="sound-toggle-btn" id="cockpitSoundToggle" aria-label="Toggle engine sound" style="font-size: 24px;">
+                        🔊
                     </button>
                 </div>
             </div>
@@ -1283,17 +1279,14 @@ const AIRLINES = {
     // Cargo
     "CLX": "Cargolux", "ABW": "AirBridgeCargo", "CAO": "Air China Cargo"
 };
-
-// === ASMR AUDIO ENGINE ===
+// === ASMR AUDIO ENGINE (Steady Brown Noise) ===
 class EngineAudio {
     constructor() {
         this.ctx = null;
         this.activeNodes = [];
         this.masterGain = null;
         this.fading = false;
-        // LFO for subtle stereo drifting (ASMR key feature)
-        this.driftOsc = null; 
-        this.stopTimer = null; // Track the cleanup timer
+        this.stopTimer = null;
     }
 
     init() {
@@ -1301,10 +1294,9 @@ class EngineAudio {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             this.masterGain = this.ctx.createGain();
             
-            // Compressor keeps levels lush but consistent (radio voice effect)
+            // Compressor keeps it loud but prevents clipping
             const compressor = this.ctx.createDynamicsCompressor();
-            compressor.threshold.value = -20;
-            compressor.knee.value = 40;
+            compressor.threshold.value = -10;
             compressor.ratio.value = 12;
             compressor.attack.value = 0;
             compressor.release.value = 0.25;
@@ -1317,126 +1309,106 @@ class EngineAudio {
         }
     }
 
-    // High quality Pink Noise generator (Softer/Airier than Brown)
-    createPinkNoise() {
-        const bufferSize = this.ctx.sampleRate * 2;
+    // Helper: Standard White Noise
+    createWhiteNoise() {
+        const bufferSize = this.ctx.sampleRate * 4; // 4 seconds
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
-        let b0, b1, b2, b3, b4, b5, b6;
-        b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
         for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
-            b0 = 0.99886 * b0 + white * 0.0555179;
-            b1 = 0.99332 * b1 + white * 0.0750759;
-            b2 = 0.96900 * b2 + white * 0.1538520;
-            b3 = 0.86650 * b3 + white * 0.3104856;
-            b4 = 0.55000 * b4 + white * 0.5329522;
-            b5 = -0.7616 * b5 - white * 0.0168980;
-            data[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
-            data[i] *= 0.11;
-            b6 = white * 0.115926;
+            data[i] = Math.random() * 2 - 1;
         }
         return buffer;
     }
 
-    // Heavy Brown Noise (Deep Rumble)
+    // Helper: "Leaky" Brown Noise (Fixes the drum beat)
     createBrownNoise() {
-        const bufferSize = this.ctx.sampleRate * 2;
+        const bufferSize = this.ctx.sampleRate * 4; // 4 seconds for less repetition
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         let lastOut = 0;
+        
         for (let i = 0; i < bufferSize; i++) {
             const white = Math.random() * 2 - 1;
-            data[i] = (lastOut + (0.02 * white)) / 1.02;
+            
+            // The "0.98" factor acts as a "leak". It constantly pulls the value 
+            // back toward zero. This prevents the wave from "wandering" too far, 
+            // which was the cause of the "drum beat" thumping sound in the original code.
+            data[i] = (lastOut * 0.98) + (white * 0.02);
+            
             lastOut = data[i];
-            data[i] *= 3.5;
+            data[i] *= 3.5; // Gain boost to make it audible
         }
         return buffer;
     }
 
     play(type) {
-        if (!state.soundEnabled) return; // Respect toggle
+        if (!state.soundEnabled) return;
         this.init();
-        this.stop(true); // Stop previous immediately
+        this.stop(true);
         
-        // Soft fade in for immersion
+        // Soft fade in
         this.masterGain.gain.setValueAtTime(0, this.ctx.currentTime);
-        this.masterGain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 2.0);
+        this.masterGain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 1.5);
         this.fading = false;
 
         const nodes = [];
-        const now = this.ctx.currentTime;
 
-        // --- GLOBAL STEREO DRIFT (The "floating" sensation) ---
+        // --- GLOBAL STEREO DRIFT (Kept this, it's subtle and nice) ---
         if (this.ctx.createStereoPanner) {
             const panner = this.ctx.createStereoPanner();
             const lfo = this.ctx.createOscillator();
             lfo.type = 'sine';
-            lfo.frequency.value = 0.1; // Very slow drift (10 seconds)
+            lfo.frequency.value = 0.05; // Extremely slow drift (20 seconds)
             const lfoGain = this.ctx.createGain();
-            lfoGain.gain.value = 0.15; // Subtle movement
+            lfoGain.gain.value = 0.1;
             
             lfo.connect(lfoGain).connect(panner.pan);
             lfo.start();
+            
             this.masterGain.disconnect();
             this.masterGain.connect(panner).connect(this.ctx.destination);
             nodes.push(lfo, lfoGain, panner);
         }
 
         if (type === 'heli') {
-            // === HELI: Rhythmic hypnotic thumping ===
-            
-            // 1. The "Whomp" (Filtered Pink Noise)
+            // === HELI (Rhythmic Chop) ===
             const noise = this.ctx.createBufferSource();
-            noise.buffer = this.createPinkNoise();
+            noise.buffer = this.createWhiteNoise(); 
             noise.loop = true;
             
+            // Lowpass makes it thumpy
             const filter = this.ctx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 250; // Dark sound
-            filter.Q.value = 2; // Resonance adds "body" to the whomp
+            filter.frequency.value = 180; 
+            filter.Q.value = 2; 
 
-            // The chopping LFO
+            // The Chopper
             const modulator = this.ctx.createOscillator();
-            modulator.frequency.value = 5.5; // Chop rate
-            modulator.type = 'sine'; // Smoother than saw for ASMR
+            modulator.frequency.value = 5.5; 
+            modulator.type = 'sawtooth';
 
-            // Create a custom pulsing curve for the gain
             const chopper = this.ctx.createGain();
             chopper.gain.value = 0;
             
-            // Connect modulation
             modulator.connect(chopper.gain); 
             noise.connect(filter).connect(chopper).connect(this.masterGain);
 
-            // 2. High Turbine Whine (very subtle/distant)
-            const osc = this.ctx.createOscillator();
-            osc.type = 'sine'; // Pure tone
-            osc.frequency.value = 300;
-            const oscGain = this.ctx.createGain();
-            oscGain.gain.value = 0.03;
-            osc.connect(oscGain).connect(this.masterGain);
-
-            noise.start(); modulator.start(); osc.start();
-            nodes.push(noise, modulator, osc, filter, chopper);
+            noise.start(); modulator.start();
+            nodes.push(noise, modulator, filter, chopper);
 
         } else if (type === 'prop') {
-            // === PROP: The "Binaural Beat" Drone ===
-            
-            // 1. Dual Detuned Oscillators (Creates the throbbing effect)
+            // === PROP (Steady Drone) ===
             const freq = 100;
             const osc1 = this.ctx.createOscillator();
             const osc2 = this.ctx.createOscillator();
             osc1.type = 'sawtooth';
             osc2.type = 'sawtooth';
-            
             osc1.frequency.value = freq;
-            osc2.frequency.value = freq + 1.5; // 1.5Hz beat frequency (Relaxing theta range)
+            osc2.frequency.value = freq + 1.5; // Phasing beat
 
-            // Heavy filtering to remove the "buzz" and keep the "hum"
             const filter = this.ctx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = 180;
+            filter.frequency.value = 160;
             
             const droneGain = this.ctx.createGain();
             droneGain.gain.value = 0.15;
@@ -1445,60 +1417,60 @@ class EngineAudio {
             osc2.connect(filter);
             filter.connect(droneGain).connect(this.masterGain);
 
-            // 2. Wind Flutter
+            // Wind Flutter layer
             const noise = this.ctx.createBufferSource();
-            noise.buffer = this.createPinkNoise();
+            noise.buffer = this.createBrownNoise(); // Use Brown for deeper prop sound
             noise.loop = true;
             const noiseGain = this.ctx.createGain();
-            noiseGain.gain.value = 0.08;
+            noiseGain.gain.value = 0.1;
             noise.connect(noiseGain).connect(this.masterGain);
 
             osc1.start(); osc2.start(); noise.start();
-            nodes.push(osc1, osc2, noise, filter);
+            nodes.push(osc1, osc2, noise, filter, droneGain, noiseGain);
 
         } else {
-            // === JET: The "White Noise Machine" (Ultimate Sleep) ===
-
-            // 1. Deep Sub-Bass (The physical rumble)
+            // === JET (Steady, Deep Brown Noise) ===
+            
+            // 1. Deep Sub-Bass (Sine) - Physical rumble
             const sub = this.ctx.createOscillator();
             sub.type = 'sine';
-            sub.frequency.value = 55;
+            sub.frequency.value = 50;
             const subGain = this.ctx.createGain();
             subGain.gain.value = 0.2;
             sub.connect(subGain).connect(this.masterGain);
 
-            // 2. Brown Noise (The Atmosphere)
-            const rumble = this.ctx.createBufferSource();
-            rumble.buffer = this.createBrownNoise();
-            rumble.loop = true;
-            const rumbleFilter = this.ctx.createBiquadFilter();
-            rumbleFilter.type = 'lowpass';
-            rumbleFilter.frequency.value = 350;
-            const rumbleGain = this.ctx.createGain();
-            rumbleGain.gain.value = 0.5;
-            rumble.connect(rumbleFilter).connect(rumbleGain).connect(this.masterGain);
-
-            // 3. Pink Noise (The Air Hiss)
-            const air = this.ctx.createBufferSource();
-            air.buffer = this.createPinkNoise();
-            air.loop = true;
-            const airFilter = this.ctx.createBiquadFilter();
-            airFilter.type = 'highpass'; // Remove low end, keep hiss
-            airFilter.frequency.value = 800;
-            const airGain = this.ctx.createGain();
-            airGain.gain.value = 0.05; // Very subtle
+            // 2. The Main Roar (Brown Noise)
+            // No LFOs. No modulation. Just constant power.
+            const roar = this.ctx.createBufferSource();
+            roar.buffer = this.createBrownNoise();
+            roar.loop = true;
             
-            // Animate the air hiss slightly (turbulence)
-            const turbLFO = this.ctx.createOscillator();
-            turbLFO.frequency.value = 0.2;
-            const turbGain = this.ctx.createGain();
-            turbGain.gain.value = 0.02;
-            turbLFO.connect(turbGain).connect(airGain.gain);
+            // Slight LowPass to smooth the very top end
+            const roarFilter = this.ctx.createBiquadFilter();
+            roarFilter.type = 'lowpass';
+            roarFilter.frequency.value = 400; 
+            
+            const roarGain = this.ctx.createGain();
+            roarGain.gain.value = 0.6; // Primary volume
 
-            air.connect(airFilter).connect(airGain).connect(this.masterGain);
+            roar.connect(roarFilter).connect(roarGain).connect(this.masterGain);
 
-            sub.start(); rumble.start(); air.start(); turbLFO.start();
-            nodes.push(sub, rumble, air, turbLFO);
+            // 3. High Altitude Hiss (Static, no waves)
+            const hiss = this.ctx.createBufferSource();
+            hiss.buffer = this.createWhiteNoise();
+            hiss.loop = true;
+            
+            const hissFilter = this.ctx.createBiquadFilter();
+            hissFilter.type = 'highpass';
+            hissFilter.frequency.value = 3000;
+            
+            const hissGain = this.ctx.createGain();
+            hissGain.gain.value = 0.03; // Very subtle air sound
+
+            hiss.connect(hissFilter).connect(hissGain).connect(this.masterGain);
+
+            sub.start(); roar.start(); hiss.start();
+            nodes.push(sub, subGain, roar, roarFilter, roarGain, hiss, hissFilter, hissGain);
         }
 
         this.activeNodes = nodes;
@@ -1507,7 +1479,6 @@ class EngineAudio {
     stop(immediate = false) {
         if (!this.ctx) return;
         
-        // ** CRITICAL FIX **: Clear any pending cleanup timer from previous fades
         if (this.stopTimer) {
             clearTimeout(this.stopTimer);
             this.stopTimer = null;
@@ -1530,20 +1501,19 @@ class EngineAudio {
         const now = this.ctx.currentTime;
         this.masterGain.gain.cancelScheduledValues(now);
         this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-        this.masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5); // Long fade out
+        this.masterGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
 
-        // Store this timer ID so we can cancel it if the user clicks another plane quickly
         this.stopTimer = setTimeout(() => {
             this.activeNodes.forEach(n => {
                 try { n.stop(); n.disconnect(); } catch(e){}
             });
             this.activeNodes = [];
             this.stopTimer = null;
-        }, 2600);
+        }, 2100);
     }
 }
 
- engineAudio = new EngineAudio();
+engineAudio = new EngineAudio();
 
 // === STATE ===
 const state = {
