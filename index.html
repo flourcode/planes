@@ -790,16 +790,23 @@ function initMap() {
             sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' }
         };
 
-        // FIX: Only add terrain on capable devices
+        // FIX: Add "Flat" 3D Terrain with a Ghost Tile to unlock pitch/fog without errors
         if (!deviceCapabilities.isLowEnd && !deviceCapabilities.hasReducedMotion) {
             cockpitMapStyle.sources['terrain-source'] = { 
-                type: 'raster-dem', 
-                url: 'https://demotiles.maplibre.org/terrain-tiles/tiles.json', 
-                tileSize: 256 
+                type: 'raster-dem',
+                // We provide a 1x1 pixel transparent image encoded as text.
+                // This satisfies the "valid URL" requirement but requires no network.
+                tiles: [
+                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg=='
+                ], 
+                tileSize: 256,
+                maxzoom: 14
             };
-            cockpitMapStyle.terrain = { source: 'terrain-source', exaggeration: 1.1 };
+            
+            // Exaggeration 0 flattens our "Ghost Tile" to sea level, 
+            // ensuring a perfect flat map while keeping the 3D camera unlocked.
+            cockpitMapStyle.terrain = { source: 'terrain-source', exaggeration: 0 };
         }
-
         state.cockpitMap = new maplibregl.Map({
             container: 'cockpitMap',
             style: cockpitMapStyle,
@@ -995,43 +1002,64 @@ function exitCockpitMode() {
 }
 function updateCockpitView() {
     if (!state.selectedHex || !state.cockpitMap) return;
-    const p = state.planesData.get(state.selectedHex); if (!p) return;
+    const p = state.planesData.get(state.selectedHex); 
+    if (!p) return;
+
     const callsign = p.flight ? p.flight.trim() : (p.r || p.hex);
-    DOM.cCallsign.textContent = callsign; DOM.cType.textContent = getAircraftTypeName(p.t);
+    DOM.cCallsign.textContent = callsign; 
+    DOM.cType.textContent = getAircraftTypeName(p.t);
+    
     const regEl = document.getElementById('cReg');
-    if (p.r) { regEl.textContent = p.r; regEl.style.display = 'block'; } else { regEl.style.display = 'none'; }
+    if (p.r) { 
+        regEl.textContent = p.r; 
+        regEl.style.display = 'block'; 
+    } else { 
+        regEl.style.display = 'none'; 
+    }
+
     DOM.cDist.textContent = calcDist(state.lat, state.lon, p.currentLat, p.currentLon).toFixed(1);
+    
     const altInfo = formatAltitude(p.alt_baro, p.alt_baro === 'ground');
-    DOM.cAlt.textContent = altInfo.value; document.getElementById('cAltUnit').textContent = altInfo.unit;
+    DOM.cAlt.textContent = altInfo.value; 
+    document.getElementById('cAltUnit').textContent = altInfo.unit;
+    
     const vsInfo = formatVerticalSpeed(p.baro_rate);
     document.getElementById('cVsi').textContent = vsInfo.value;
-    const vsiIndicator = document.getElementById('vsiIndicator'); vsiIndicator.textContent = vsInfo.arrow; vsiIndicator.className = `vsi-indicator ${vsInfo.trend}`;
+    
+    const vsiIndicator = document.getElementById('vsiIndicator'); 
+    vsiIndicator.textContent = vsInfo.arrow; 
+    vsiIndicator.className = `vsi-indicator ${vsInfo.trend}`;
+    
     DOM.cSpd.textContent = Math.round(p.gs || 0);
+
     document.getElementById('compassRing').style.transform = `rotate(-${Math.round(p.track || 0)}deg)`;
     const phase = getFlightPhase(p);
     const phaseBadge = document.getElementById('phaseBadge');
-    phaseBadge.textContent = { ground: 'On Ground', takeoff: 'Takeoff', climb: 'Climbing', cruise: 'Cruising', descent: 'Descending', approach: 'Approach', landing: 'Landing' }[phase] || 'Unknown';
+    const phaseLabels = { 
+        ground: 'On Ground', takeoff: 'Takeoff', climb: 'Climbing', 
+        cruise: 'Cruising', descent: 'Descending', approach: 'Approach', 
+        landing: 'Landing' 
+    };
+    phaseBadge.textContent = phaseLabels[phase] || 'Unknown';
     phaseBadge.className = 'phase-badge';
-    if (phase === 'ground') phaseBadge.classList.add('ground'); else if (['takeoff','climb'].includes(phase)) phaseBadge.classList.add('climbing'); else if (['descent','approach','landing'].includes(phase)) phaseBadge.classList.add('descending');
+    
+    if (phase === 'ground') phaseBadge.classList.add('ground'); 
+    else if (['takeoff','climb'].includes(phase)) phaseBadge.classList.add('climbing'); 
+    else if (['descent','approach','landing'].includes(phase)) phaseBadge.classList.add('descending');
     
     const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
     const zoom = Math.max(9, 16 - (alt / 6000));
+    
     const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, Math.max(0.5, (17 - zoom) * 2.5));
     
-    // FIX: Use easeTo instead of jumpTo for smoother transitions with less GPU strain
     state.cockpitMap.easeTo({ 
         center: target, 
-        zoom, 
+        zoom: zoom, 
         pitch: 80, 
         bearing: p.track || 0,
-        duration: CONFIG.COCKPIT_UPDATE_MS, // Match the update interval for smooth interpolation
-        easing: (t) => t // Linear easing for consistent motion
+        duration: CONFIG.COCKPIT_UPDATE_MS, 
+        easing: (t) => t 
     });
-
-    const condition = DOM.wxCond.textContent.toLowerCase();
-    const isBadWeather = condition.includes('rain') || condition.includes('snow') || condition.includes('storm') || condition.includes('cloud');
-    state.cockpitMap.setPaintProperty('sky', 'sky-color', isBadWeather ? '#2a2a2e' : '#050510');
-    state.cockpitMap.setPaintProperty('sky', 'fog-color', isBadWeather ? '#2a2a2e' : '#0a2a4a');
 }
 
 // === INTERACTION & LIFECYCLE ===
