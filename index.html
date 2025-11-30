@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="PlanePatrol">
-    <title>Plane Patrol</title>
+    <title>PlanePatrol</title>
     <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -122,6 +122,16 @@
         font-weight: 600;
         letter-spacing: -0.5px;
         margin-bottom: 8px;
+    }
+
+    .splash-subtitle {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text-secondary);
+        max-width: 280px;
+        text-align: center;
+        line-height: 1.4;
+        margin-bottom: 24px;
     }
     
     .splash-status {
@@ -257,6 +267,30 @@
         letter-spacing: 1px;
         text-transform: uppercase;
         margin-top: 4px;
+    }
+
+    .count-range {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-tertiary);
+        margin-top: 2px;
+    }
+
+    .empty-state {
+        display: none;
+        background: var(--surface);
+        backdrop-filter: var(--blur);
+        -webkit-backdrop-filter: var(--blur);
+        border-radius: 16px;
+        padding: 14px 18px;
+        border: 1px solid var(--separator);
+        font-size: 13px;
+        color: var(--text-secondary);
+        max-width: 200px;
+        line-height: 1.4;
+    }
+    .empty-state.show {
+        display: block;
     }
 
     .action-buttons {
@@ -728,7 +762,8 @@
         <svg class="splash-icon" viewBox="-10 -10 120 120" fill="#e8e8eb">
             <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
         </svg>
-        <div class="splash-title">Plane Patrol</div>
+        <div class="splash-title">PlanePatrol</div>
+        <div class="splash-subtitle">Live aircraft tracking. Tap any plane to enter cockpit view.</div>
         <div class="splash-status" id="splashStatus">
             Locating<span class="splash-dots"><span></span><span></span><span></span></span>
         </div>
@@ -764,6 +799,10 @@
                 <div class="aircraft-count">
                     <div class="count-number" id="planeCount">0</div>
                     <div class="count-label">Aircraft</div>
+                    <div class="count-range" id="rangeLabel">within 5 mi</div>
+                </div>
+                <div class="empty-state" id="emptyState">
+                    No aircraft in range. Try widening the radius or pick a busier airport.
                 </div>
 
                 <div class="action-buttons">
@@ -1262,7 +1301,10 @@ const state = {
     soundEnabled: false, // Default: Sound is OFF
     lightTheme: false,
     watchId: null, isFetchingPlanes: false, hasLockedLocation: false,
-    cachedStationUrl: null, lastAnimateTime: 0
+    cachedStationUrl: null, lastAnimateTime: 0,
+    // Onboarding flags (persist in localStorage)
+    hasSeenPlaneTip: localStorage.getItem('pp-seen-plane-tip') === 'true',
+    hasSeenCockpitTip: localStorage.getItem('pp-seen-cockpit-tip') === 'true'
 };
 
 // === DOM REFERENCES ===
@@ -1275,6 +1317,8 @@ const DOM = {
     locationDisplay: document.getElementById('locationDisplay'),
     statusDisplay: document.getElementById('statusDisplay'),
     planeCount: document.getElementById('planeCount'),
+    rangeLabel: document.getElementById('rangeLabel'),
+    emptyState: document.getElementById('emptyState'),
     wxTemp: document.getElementById('wxTemp'),
     wxCond: document.getElementById('wxCond'),
     wxWind: document.getElementById('wxWind'),
@@ -1602,7 +1646,24 @@ async function fetchPlanes() {
                 }
             });
 
-            DOM.planeCount.textContent = activeHexes.size;
+            const count = activeHexes.size;
+            DOM.planeCount.textContent = count;
+            
+            // Show/hide empty state
+            if (count === 0) {
+                DOM.emptyState.classList.add('show');
+                document.querySelector('.aircraft-count').style.display = 'none';
+            } else {
+                DOM.emptyState.classList.remove('show');
+                document.querySelector('.aircraft-count').style.display = 'block';
+            }
+
+            // Show first-time tip
+            if (count > 0 && !state.hasSeenPlaneTip) {
+                state.hasSeenPlaneTip = true;
+                localStorage.setItem('pp-seen-plane-tip', 'true');
+                showToast('Tap a plane icon to enter cockpit view', 4000);
+            }
 
             for (let [hex] of state.planesData) {
                 if (!activeHexes.has(hex)) {
@@ -1766,6 +1827,15 @@ function enterCockpitMode(hex) {
     DOM.cockpitView.classList.add('active');
     state.cockpitMap.resize();
 
+    // Show first-time cockpit tip
+    if (!state.hasSeenCockpitTip) {
+        state.hasSeenCockpitTip = true;
+        localStorage.setItem('pp-seen-cockpit-tip', 'true');
+        setTimeout(() => {
+            showToast('Locked to aircraft. Toggle sound for engine noise.', 4000);
+        }, 800);
+    }
+
     setTimeout(() => {
         if (state.mode === 'cockpit') document.getElementById('map').style.visibility = 'hidden';
     }, 500);
@@ -1783,6 +1853,7 @@ function exitCockpitMode() {
     if (state.lat && state.lon) {
         state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
     }
+    showToast('Back to radar view');
 }
 
 function updateCockpitView() {
@@ -1880,6 +1951,7 @@ function selectRadius(r) {
     document.querySelectorAll('.range-chip').forEach(el => {
         el.classList.toggle('selected', parseInt(el.dataset.range) === r);
     });
+    DOM.rangeLabel.textContent = `within ${r} mi`;
     fetchPlanes();
     if (state.map) state.map.setZoom(getZoomForRadius(r));
 }
