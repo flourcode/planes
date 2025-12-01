@@ -90,7 +90,8 @@
     .splash-icon { width: 80px; height: 80px; margin-bottom: 24px; opacity: 0.9; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     .splash-title { font-size: 32px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 8px; }
-    .splash-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+    .splash-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; text-align: center; max-width: 80%; line-height: 1.5;
+    }
     .splash-status { font-size: 13px; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; }
 
     /* === MAIN HUD === */
@@ -252,7 +253,7 @@
             <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
         </svg>
         <div class="splash-title">Plane Patrol</div>
-        <div class="splash-subtitle">Live Global Aircraft Tracking and Ride Alongs.</div>
+        <div class="splash-subtitle">Live Local Aircraft Tracking</div>
         <div class="splash-status" id="splashStatus">
             Locating<span class="splash-dots"><span></span><span></span><span></span></span>
         </div>
@@ -633,7 +634,7 @@ function haptic(style = 'light') {
     }
 }
 let toastTimeout = null;
-function showToast(message, duration = 3000) {
+function showToast(message, duration = 1000) {
     if (toastTimeout) clearTimeout(toastTimeout);
     DOM.toast.textContent = message; DOM.toast.classList.add('show');
     toastTimeout = setTimeout(() => DOM.toast.classList.remove('show'), duration);
@@ -881,7 +882,7 @@ async function fetchPlanes() {
             if (count > 0 && !state.hasSeenPlaneTip) {
                 state.hasSeenPlaneTip = true; 
                 safeLocalStorageSet('pp-seen-plane-tip', 'true'); 
-                showToast('Tap a plane icon to enter cockpit view', 4000);
+                showToast('Tap a plane', 1000);
             }
             for (let [hex] of state.planesData) {
                 if (!activeHexes.has(hex)) {
@@ -1021,16 +1022,22 @@ function enterCockpitMode(hex) {
     if (!state.hasSeenCockpitTip) { 
         state.hasSeenCockpitTip = true; 
         safeLocalStorageSet('pp-seen-cockpit-tip', 'true'); 
-        setTimeout(() => showToast('Toggle sound for engine noise.', 4000), 800); 
+        setTimeout(() => showToast('Toggle sound', 1000), 800); 
     }
     setTimeout(() => { if (state.mode === 'cockpit') document.getElementById('map').style.visibility = 'hidden'; }, 500);
 }
 function exitCockpitMode() {
-    engineAudio.stop(); document.getElementById('map').style.visibility = 'visible';
-    state.mode = 'radar'; state.selectedHex = null;
-    DOM.cockpitView.classList.remove('active'); DOM.mainView.classList.remove('hidden'); state.map.resize();
-    if (state.lat && state.lon) state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
-    showToast('Back to radar view');
+    engineAudio.stop(); 
+    document.getElementById('map').style.visibility = 'visible';
+    state.mode = 'radar'; 
+    state.selectedHex = null;
+    DOM.cockpitView.classList.remove('active'); 
+    DOM.mainView.classList.remove('hidden'); 
+    state.map.resize();
+    
+    if (state.lat && state.lon) {
+        state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
+    }
 }
 function updateCockpitView() {
     if (!state.selectedHex || !state.cockpitMap) return;
