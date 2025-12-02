@@ -1,4 +1,4 @@
-const CACHE_NAME = 'planepatrol';
+const CACHE_NAME = 'planespotted';
 const ASSETS = [
     './',
     './index.html',
@@ -22,4 +22,5 @@ self.addEventListener('fetch', (e) => {
             return response || fetch(e.request);
         })
     );
+
 });
