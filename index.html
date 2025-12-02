@@ -25,22 +25,17 @@
         /* Slightly darker surface for better text contrast against maps */
         --surface: rgba(18, 18, 22, 0.85); 
         --surface-elevated: rgba(35, 35, 40, 0.90);
-        
         --text-primary: #f5f5f7;
         --text-secondary: rgba(245, 245, 247, 0.65);
         --text-tertiary: rgba(245, 245, 247, 0.45);
-        
         --accent: #6e9fff;
         --success: #32d74b;
         --warning: #ffb340;
         --danger: #ff453a;
-        
         --separator: rgba(255, 255, 255, 0.12);
-        
         /* Typography - The "Pairing" Strategy */
         --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         --font-mono: 'Space Mono', monospace;
-
         /* Layout & Animation */
         --safe-top: env(safe-area-inset-top, 20px);
         --safe-bottom: env(safe-area-inset-bottom, 20px);
@@ -48,13 +43,10 @@
         --shadow-elevation: 0 8px 32px rgba(0, 0, 0, 0.4);
         --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
     }
-
     @media (max-width: 768px), (hover: none) {
         :root { --blur: blur(15px) saturate(140%); }
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
-
     html, body {
         height: 100%; width: 100%;
         background: var(--bg);
@@ -64,11 +56,9 @@
         overscroll-behavior: none;
         touch-action: manipulation;
     }
-
     /* === VIEWS === */
     #main-view { position: absolute; inset: 0; z-index: 10; opacity: 1; transition: opacity 0.6s ease; touch-action: none; }
     #main-view.hidden { opacity: 0; pointer-events: none; }
-    
     #cockpit-view { 
         position: absolute; inset: 0; z-index: 20; 
         background: var(--bg); opacity: 0; pointer-events: none; visibility: hidden;
@@ -79,26 +69,11 @@
         opacity: 1; pointer-events: auto; visibility: visible; 
         transition: opacity 0.6s ease, visibility 0s linear 0s; 
     }
-
     /* === MAPS === */
     #map, #cockpitMap { position: absolute; inset: 0; z-index: 0; background: var(--bg); }
     .maplibregl-canvas { filter: none !important; }
     .maplibregl-ctrl { display: none !important; }
-
-    /* === SPLASH SCREEN === */
-    .splash-screen {
-        position: fixed; inset: 0; z-index: 9999;
-        background: var(--bg);
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    .splash-screen.hidden { opacity: 0; pointer-events: none; transform: scale(1.05); }
-    .splash-icon { width: 80px; height: 80px; margin-bottom: 24px; opacity: 0.9; animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    .splash-title { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
-    .splash-subtitle { font-size: 15px; color: var(--text-secondary); margin-bottom: 24px; text-align: center; max-width: 80%; line-height: 1.5; }
-    .splash-status { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; }
-
+    
     /* === MAIN HUD === */
     .hud {
         position: fixed; inset: 0; z-index: 20; pointer-events: none;
@@ -106,7 +81,6 @@
         display: flex; flex-direction: column; justify-content: space-between;
     }
     .hud-top { display: flex; justify-content: space-between; align-items: flex-start; }
-
     /* Glass Blocks Shared Styles */
     .location-block, .weather-block, .aircraft-count, .empty-state, .range-selector {
         background: var(--surface); 
@@ -116,9 +90,7 @@
         border: 1px solid var(--separator);
         box-shadow: var(--shadow-elevation);
     }
-
     .weather-block { text-align: right; }
-    
     .location-coords { font-family: var(--font-mono); font-size: 26px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
     .location-status { 
         font-size: 11px; font-weight: 700; color: var(--success); 
@@ -132,18 +104,13 @@
         font-family: var(--font-mono); font-size: 10px; font-weight: 700; 
         color: var(--text-secondary); margin-left: 6px; 
     }
-
     .weather-temp { font-family: var(--font-mono); font-size: 34px; font-weight: 400; letter-spacing: -2px; line-height: 1; }
     .weather-details { font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-top: 6px; }
-
     .hud-bottom { display: flex; justify-content: space-between; align-items: flex-end; position: relative; width: 100%; }
-    
     .count-number { font-family: var(--font-mono); font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
     .count-label { font-size: 11px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
-    
     .empty-state { display: none; font-size: 13px; color: var(--text-secondary); max-width: 200px; line-height: 1.4; padding: 14px 18px; }
     .empty-state.show { display: block; }
-
     /* ACTION BUTTONS (Bottom Center) */
     .action-buttons { 
         display: flex; gap: 12px; pointer-events: auto; z-index: 50; position: relative; 
@@ -161,12 +128,9 @@
     }
     .action-btn:active { transform: scale(0.92); }
     .action-btn:hover { background: var(--surface-elevated); }
-    
     .action-btn.danger { background: rgba(255, 69, 58, 0.15); border-color: rgba(255, 69, 58, 0.3); color: var(--danger); }
     .action-btn.radar-active { background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); color: var(--success); }
-    
     .wx-text { font-family: var(--font-mono); font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
-
     /* RANGE SELECTOR */
     .range-group {
         position: fixed; right: 20px; bottom: calc(90px + var(--safe-bottom));
@@ -176,18 +140,29 @@
         font-size: 10px; font-weight: 700; color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; 
         text-shadow: 0 1px 4px rgba(0,0,0,0.8);
     }
-    .range-selector {
-        border-radius: 50px; padding: 4px; display: flex; gap: 2px; pointer-events: auto;
-    }
-    .range-opt {
-        background: none; border: none; 
-        color: var(--text-secondary); 
-        font-family: var(--font-mono); font-size: 13px; font-weight: 700;
-        width: 38px; height: 38px; border-radius: 50%; 
-        cursor: pointer; transition: all var(--transition-fast);
-    }
-    .range-opt.selected { background: var(--text-primary); color: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    /* Update this existing class */
+.range-selector {
+    background: var(--surface);
+    backdrop-filter: var(--blur);
+    border-radius: 50px; 
+    padding: 4px; 
+    display: flex; 
+    gap: 4px; /* Slightly wider gap */
+    pointer-events: auto;
+    border: 1px solid var(--separator);
+}
 
+/* Update this existing class */
+.range-opt {
+    background: none; border: none; 
+    color: var(--text-secondary); 
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    width: 44px; /* Slightly wider targets */
+    height: 44px; 
+    border-radius: 50%; 
+    cursor: pointer; transition: all var(--transition-fast);
+}
+    .range-opt.selected { background: var(--text-primary); color: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     /* RESET BUTTON (HOME) */
     .reset-btn { 
         position: fixed; bottom: calc(160px + var(--safe-bottom)); right: 20px; 
@@ -203,7 +178,6 @@
         padding: 0;
     }
     .reset-btn:active { transform: scale(0.92); }
-
     /* === COCKPIT VIEW === */
     .cockpit-hud { 
         position: fixed; inset: 0; pointer-events: none; z-index: 30; 
@@ -211,13 +185,11 @@
         display: flex; flex-direction: column; justify-content: space-between; 
     }
     .cockpit-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    
     .callsign-block { 
         background: var(--surface); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); 
         border-radius: 20px; padding: 16px 24px; border: 1px solid var(--separator); 
         box-shadow: var(--shadow-elevation);
     }
-
     .callsign { 
         font-family: var(--font-mono);
         font-size: clamp(24px, 5vw, 36px); 
@@ -225,11 +197,9 @@
     }
     .aircraft-type { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-top: 6px; }
     .registration { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text-tertiary); margin-top: 6px; letter-spacing: 0.5px; }
-
     .vsi-indicator { display: inline-block; margin-left: 6px; font-size: 16px; transition: all var(--transition-fast); }
     .vsi-indicator.climbing { color: var(--success); }
     .vsi-indicator.descending { color: var(--warning); }
-    
     .phase-row { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--separator); }
     .phase-badge { 
         display: inline-block; padding: 4px 10px; 
@@ -240,7 +210,6 @@
     .phase-badge.ground { background: var(--text-tertiary); }
     .phase-badge.climbing { background: var(--success); }
     .phase-badge.descending { background: var(--warning); }
-
     /* COCKPIT INSTRUMENT COMPASS */
     .compass-block { 
         width: 84px; height: 84px; 
@@ -269,7 +238,6 @@
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); z-index: 2;
     }
     .compass-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-
     /* SOUND TOGGLE */
     .sound-toggle-btn {
         position: fixed; bottom: calc(168px + var(--safe-bottom)); right: 20px; z-index: 100;
@@ -284,9 +252,7 @@
     .sound-toggle-btn svg { width: 22px; height: 22px; color: var(--text-primary); opacity: 0.9; }
     .sound-toggle-btn.active { background: rgba(50, 215, 75, 0.15); border-color: rgba(50, 215, 75, 0.3); }
     .sound-toggle-btn.active svg { color: var(--success); opacity: 1; }
-
     .cockpit-bottom { display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
-    
     .data-card { 
         background: var(--surface); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); 
         border-radius: 20px; padding: 16px 20px; border: 1px solid var(--separator); 
@@ -297,11 +263,9 @@
     .data-value { font-family: var(--font-mono); font-size: 28px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
     .data-unit { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-left: 2px; font-family: var(--font-ui); }
     .data-row { margin-top: 16px; }
-
     .crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 60px; z-index: 25; opacity: 0.4; pointer-events: none; }
     .crosshair svg path, .crosshair svg circle { stroke: rgba(232, 232, 235, 0.7); stroke-width: 1.5; fill: none; }
     .crosshair svg circle { fill: rgba(232, 232, 235, 0.7); }
-
     /* BACK BUTTON */
     .back-btn { 
         position: fixed; bottom: calc(220px + var(--safe-bottom)); right: 20px; 
@@ -320,13 +284,11 @@
     .back-btn:active { transform: scale(0.95); }
     .back-btn:hover { background: var(--surface-elevated); }
     .back-btn svg { width: 16px; height: 16px; }
-
     /* === OFFLINE OVERLAY === */
     .offline-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
     .offline-title { font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 1px; margin-bottom: 24px; }
     .wake-btn { background: var(--accent); border: none; color: var(--bg); padding: 14px 32px; border-radius: 50px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform var(--transition-fast); }
     .wake-btn:active { transform: scale(0.95); }
-
     .toast {
         position: fixed; top: calc(130px + var(--safe-top)); left: 50%;
         transform: translateX(-50%) translateY(-20px);
@@ -340,12 +302,11 @@
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
     /* === CUSTOM MODALS === */
     .modal-overlay {
         position: fixed; inset: 0; z-index: 10000; background: rgba(0, 0, 0, 0.6); 
         backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-        display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
     }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .modal-content {
@@ -356,7 +317,6 @@
     .modal-overlay.active .modal-content { transform: scale(1); }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
     .modal-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5; }
-    
     .modal-actions { display: flex; gap: 12px; }
     .modal-btn {
         flex: 1; padding: 14px; border-radius: 50px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s;
@@ -364,7 +324,6 @@
     .modal-btn:active { transform: scale(0.95); }
     .modal-btn.secondary { background: rgba(255,255,255,0.08); color: var(--text-primary); }
     .modal-btn.primary { background: var(--danger); color: #fff; box-shadow: 0 4px 15px rgba(255, 69, 58, 0.3); }
-
     /* NAVIGATOR STYLES */
     .search-box { display: flex; gap: 8px; margin-bottom: 12px; }
     .search-box input {
@@ -378,7 +337,6 @@
         padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
     .search-error { color: var(--danger); font-size: 12px; height: 16px; margin-bottom: 8px; font-weight: 500; }
-
     .hotspot-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .hotspot-btn {
         background: rgba(255,255,255,0.05); border: 1px solid var(--separator);
@@ -398,26 +356,18 @@
 </style>
 </head>
 <body>
-    <div class="splash-screen" id="splashScreen">
-        <svg class="splash-icon" viewBox="-10 -10 120 120" fill="#e8e8eb">
-            <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
+<div class="modal-overlay active" id="welcomeModal" style="z-index: 10000; background: var(--bg);">
+    <div class="modal-content" style="max-width: 320px; border: 1px solid var(--separator);">
+        <svg viewBox="-10 -10 120 120" fill="#e8e8eb" style="width: 60px; height: 60px; margin-bottom: 16px; animation: float 3s ease-in-out infinite;">
+             <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
         </svg>
-        <div class="splash-title">Plane Patrol</div>
-        <div class="splash-subtitle">Live Local Aircraft Tracking</div>
-        <div class="splash-status" id="splashStatus">
-            Locating<span class="splash-dots"><span></span><span></span><span></span></span>
+        <div class="modal-title">Plane Patrol</div>
+        <div class="modal-desc" style="margin-bottom: 24px;">
+            Live local aircraft tracking. Enable GPS to see what's flying above you right now.
         </div>
-    </div>
-<div class="modal-overlay" id="welcomeModal" style="z-index: 9998; background: var(--bg);">
-    <div class="modal-content" style="max-width: 320px;">
-        <div style="font-size: 40px; margin-bottom: 16px;">✈️</div>
-        <div class="modal-title">Ready for Takeoff?</div>
-        <div class="modal-desc">
-            Plane Patrol needs your location to show aircraft flying above you right now.
-        </div>
-        <button class="modal-btn primary" id="enableGpsBtn">Find Local Planes</button>
+        <button class="modal-btn primary" id="enableGpsBtn">Start Tracking</button>
         <div style="margin-top: 16px; font-size: 11px; color: var(--text-tertiary);">
-            Using precision tracking
+            Precision Mode · Live Data
         </div>
     </div>
 </div>
@@ -425,7 +375,6 @@
         <div class="offline-title">SYSTEMS OFFLINE</div>
         <button class="wake-btn" id="wakeBtn" aria-label="Resume tracking">Resume Tracking</button>
     </div>
-    
     <div class="modal-overlay" id="confirmModal" aria-labelledby="confirmModalTitle">
     <div class="modal-content">
         <div class="modal-title" id="confirmModalTitle">Pause Tracking?</div>
@@ -436,7 +385,6 @@
             </div>
         </div>
     </div>
-
     <div id="main-view">
         <div id="map"></div>
         <div class="hud">
@@ -458,7 +406,6 @@
                     <div class="count-label">Aircraft</div>
                 </div>
                 <div class="empty-state" id="emptyState">No aircraft. Increase radar range.</div>
-                
                 <div class="action-buttons">
                     <button class="action-btn" id="exploreBtn" aria-label="Open Navigator">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 22px; height: 22px;">
@@ -466,11 +413,9 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </button>
-                    
                     <button class="action-btn radar-active" id="radarBtn" aria-label="Toggle Weather Radar">
                         <span class="wx-text">Wx</span>
                     </button>
-                    
                     <button class="action-btn danger" id="quitBtn" aria-label="Pause tracking">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 22px; height: 22px;">
                             <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
@@ -480,17 +425,14 @@
                 </div>
             </div>
         </div>
-
         <div class="range-group">
-            <div class="range-label">Radar Range</div>
-            <div class="range-selector">
-                <button class="range-opt" data-range="3">3</button>
-                <button class="range-opt" data-range="5">5</button>
-                <button class="range-opt selected" data-range="10">10</button>
-                <button class="range-opt" data-range="20">20</button>
-            </div>
-        </div>
-
+    <div class="range-label">Radar Range</div>
+    <div class="range-selector">
+        <button class="range-opt" data-range="5">5</button>
+        <button class="range-opt selected" data-range="8">8</button>
+        <button class="range-opt" data-range="15">15</button>
+    </div>
+</div>
         <button class="reset-btn" id="resetBtn" aria-label="Reset to GPS location">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width: 22px; height: 22px;">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -498,16 +440,13 @@
             </svg>
         </button>
     </div>
-
     <div id="cockpit-view">
         <div id="cockpitMap"></div>
-        
         <div class="crosshair">
             <svg viewBox="0 0 200 60">
                 <path d="M 30,30 L 80,30"/><path d="M 120,30 L 170,30"/><circle cx="100" cy="30" r="3"/>
             </svg>
         </div>
-
         <div class="cockpit-hud">
             <div class="cockpit-top">
                 <div class="callsign-block">
@@ -515,7 +454,6 @@
                     <div class="aircraft-type" id="cType">Unknown Aircraft</div>
                     <div class="registration" id="cReg"></div>
                 </div>
-                
                 <div class="compass-wrapper">
                     <div class="compass-block">
                         <div class="compass-ring" id="compassRing">
@@ -530,14 +468,12 @@
                     </div>
                 </div>
             </div>
-
             <button class="back-btn" id="backBtn" aria-label="Back">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
                 BACK
             </button>
-
             <button class="sound-toggle-btn" id="cockpitSoundToggle" aria-label="Toggle engine sound">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
@@ -545,7 +481,6 @@
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
                 </svg>
             </button>
-
             <div class="cockpit-bottom">
                 <div class="data-card">
                     <div class="data-label">Altitude</div>
@@ -561,7 +496,6 @@
                         <div class="phase-badge" id="phaseBadge">Cruising</div>
                     </div>
                 </div>
-                
                 <div class="data-card right">
                     <div class="data-label">Ground Speed</div>
                     <div class="data-value"><span id="cSpd">0</span><span class="data-unit">kts</span></div>
@@ -573,17 +507,14 @@
             </div>
         </div>
     </div>
-    
     <div class="modal-overlay" id="exploreModal" aria-labelledby="exploreModalTitle">
     <div class="modal-content">
         <div class="modal-title" id="exploreModalTitle">Navigator</div>
-            
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="Flight or Airport (e.g. UAL1, KJFK)" maxlength="8">
                 <button id="searchBtn">GO</button>
             </div>
             <div class="search-error" id="searchError"></div>
-
             <div class="modal-desc" style="margin-top: 20px; font-weight: 600; color: var(--text-tertiary); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Major Hubs</div>
             <div class="hotspot-grid">
                 <button class="hotspot-btn" data-loc="33.94,-118.40">LAX</button>
@@ -596,13 +527,11 @@
                 <button class="hotspot-btn" data-loc="38.95,-77.45">IAD</button>
                 <button class="hotspot-btn" data-loc="38.85,-77.04">DCA</button>
             </div>
-
             <div class="modal-actions" style="margin-top: 24px;">
                 <button class="modal-btn secondary" id="closeExploreBtn">Close</button>
             </div>
         </div>
     </div>
-    
     <div class="toast" id="toast"></div>
 <script>
 // === CONFIGURATION ===
@@ -619,25 +548,18 @@ const CONFIG = {
     // Stability > Aggressive optimization
     ANIMATION_FRAME_MS: 16,      // ~60 FPS for smooth UI
     COCKPIT_UPDATE_MS: 30,       // Smoother cockpit camera
-    MAP_UPDATE_MS: 50            // Standard map updates
+    MAP_UPDATE_MS: 100            // Standard map updates
 };
-// === DEBOUNCE UTILITY ===
-function debounce(func, wait, immediate = false) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            timeout = null;
-            if (!immediate) func.apply(this, args);
-        };
-        const callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(this, args);
-    };
-}
-
-// Create debounced version of fetchPlanes for user-triggered calls
-const debouncedFetchPlanes = debounce(() => fetchPlanes(), 500);
+// WMO Weather interpretation codes (0-99)
+const WMO_CODES = {
+    0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
+    45: 'Fog', 48: 'Rime Fog',
+    51: 'Light Drizzle', 53: 'Drizzle', 55: 'Heavy Drizzle',
+    61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain',
+    71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow',
+    77: 'Snow Grains', 80: 'Light Showers', 81: 'Showers', 82: 'Heavy Showers',
+    95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Heavy T-Storm'
+};
 const AIRCRAFT_TYPES = {
     "A318": "Airbus A318", "A319": "Airbus A319", "A320": "Airbus A320", "A20N": "Airbus A320neo", "A321": "Airbus A321", "A21N": "Airbus A321neo", "A332": "Airbus A330-200", "A333": "Airbus A330-300", "A338": "Airbus A330-800", "A339": "Airbus A330-900", "A343": "Airbus A340-300", "A346": "Airbus A340-600", "A359": "Airbus A350-900", "A35K": "Airbus A350-1000", "A388": "Airbus A380", "A306": "Airbus A300-600", "A3ST": "Airbus Beluga", "BCS1": "Airbus A220-100", "BCS3": "Airbus A220-300",
     "B737": "Boeing 737-700", "B738": "Boeing 737-800", "B739": "Boeing 737-900", "B38M": "Boeing 737 MAX 8", "B39M": "Boeing 737 MAX 9", "B744": "Boeing 747-400", "B748": "Boeing 747-8", "B752": "Boeing 757-200", "B753": "Boeing 757-300", "B763": "Boeing 767-300", "B764": "Boeing 767-400", "B772": "Boeing 777-200", "B77L": "Boeing 777-200LR", "B77W": "Boeing 777-300ER", "B77X": "Boeing 777X", "B788": "Boeing 787-8", "B789": "Boeing 787-9", "B78X": "Boeing 787-10",
@@ -651,26 +573,28 @@ const AIRCRAFT_TYPES = {
     "B52": "B-52 Stratofortress", "B1": "B-1 Lancer", "B2": "B-2 Spirit", "A10": "A-10 Thunderbolt II", "E3TF": "E-3 Sentry (AWACS)", "E3CF": "E-3 Sentry (AWACS)", "E6": "E-6 Mercury", "E2": "E-2 Hawkeye", "P8": "P-8 Poseidon", "C135": "RC-135 Rivet Joint", "U2": "U-2 Dragon Lady",
     "R44": "Robinson R44", "R66": "Robinson R66", "B06": "Bell 206", "B407": "Bell 407", "EC35": "H135/EC135", "S76": "Sikorsky S-76", "S92": "Sikorsky S-92", "AW13": "AW139", "H64": "AH-64 Apache", "H47": "CH-47 Chinook", "H53": "CH-53 Sea Stallion", "V22": "V-22 Osprey", "TIGR": "Eurocopter Tiger", "NH90": "NH90", "UH1": "UH-1 Huey", "UH1N": "UH-1N Twin Huey", "UH1Y": "UH-1Y Venom", "GAZL": "Gazelle", "LYNX": "AW159 Wildcat", "H500": "MD 500 / Little Bird", "EXPL": "MD Explorer", "B429": "Bell 429", "EN48": "Enstrom 480", "EH10": "AW101 Merlin", "AS32": "AS332 Super Puma", "EC25": "EC225 Super Puma", "AS65": "AS365 Dauphin", "H60": "Black Hawk / Seahawk", "EC45": "H145 / Lakota", "AS50": "H125 / AS350"
 };
-
 // === ASMR AUDIO ENGINE ===
 class EngineAudio {
     constructor() {
         this.ctx = null; this.activeNodes = []; this.masterGain = null; this.fading = false; this.stopTimer = null;
         this.whiteBuffer = null; this.brownBuffer = null;
     }
-    init() {
-        if (!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-            this.masterGain = this.ctx.createGain();
-            const compressor = this.ctx.createDynamicsCompressor();
-            compressor.threshold.value = -10; compressor.ratio.value = 12;
-            compressor.attack.value = 0; compressor.release.value = 0.25;
-            this.masterGain.connect(compressor); compressor.connect(this.ctx.destination);
-            this.whiteBuffer = this.createWhiteNoise();
-            this.brownBuffer = this.createBrownNoise();
-        }
-        if (this.ctx.state === 'suspended') { this.ctx.resume(); }
+    // Find your EngineAudio class and update the init() method:
+init() {
+    if (!this.ctx) {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        this.masterGain = this.ctx.createGain();
+        const compressor = this.ctx.createDynamicsCompressor();
+        compressor.threshold.value = -10; compressor.ratio.value = 12;
+        compressor.attack.value = 0; compressor.release.value = 0.25;
+        this.masterGain.connect(compressor); compressor.connect(this.ctx.destination);
+        this.whiteBuffer = this.createWhiteNoise();
+        this.brownBuffer = this.createBrownNoise();
     }
+    if (this.ctx.state === 'suspended') { 
+        this.ctx.resume().catch(() => { /* Ignore autoplay warnings */ }); 
+    }
+}
     createWhiteNoise() {
         const bufferSize = this.ctx.sampleRate * 4;
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
@@ -697,7 +621,6 @@ class EngineAudio {
         this.masterGain.gain.linearRampToValueAtTime(0.6, this.ctx.currentTime + 1.5);
         this.fading = false;
         const nodes = [];
-        
         if (type === 'heli') {
             const noise = this.ctx.createBufferSource(); noise.buffer = this.brownBuffer; noise.loop = true;
             const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 300; filter.Q.value = 0;
@@ -754,7 +677,6 @@ class EngineAudio {
     }
 }
 const engineAudio = new EngineAudio();
-
 // === HELPERS ===
 function safeLocalStorage(key, defaultValue = null) {
     try { return localStorage.getItem(key); } catch (e) { return defaultValue; }
@@ -762,16 +684,15 @@ function safeLocalStorage(key, defaultValue = null) {
 function safeLocalStorageSet(key, value) {
     try { localStorage.setItem(key, value); } catch (e) {}
 }
-
 const deviceCapabilities = {
     isLowEnd: navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false,
     hasReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
 };
-
 // === STATE ===
 const state = {
-    lat: null, lon: null, radius: 10,
+    lat: null, lon: null, radius: 8,
     map: null, cockpitMap: null,
+	isMapReady: false,
     planesData: new Map(),
     selectedHex: null, mode: 'radar',
     wxInterval: null, planeInterval: null,
@@ -788,7 +709,6 @@ const state = {
     lastCockpitUpdateTime: 0,
     animationRunning: false
 };
-
 // === DOM REFERENCES ===
 const DOM = {
     splashScreen: document.getElementById('splashScreen'),
@@ -811,10 +731,11 @@ const DOM = {
     radarBtn: document.getElementById('radarBtn'),
     toast: document.getElementById('toast')
 };
-
 // === UTILITIES ===
 function getZoomForRadius(r) {
-    if (r <= 3) return 13; if (r <= 5) return 12; if (r <= 10) return 11; if (r <= 20) return 10; return 9;
+    if (r <= 5) return 12.2;  // Close up for "Visual"
+    if (r <= 8) return 11.5;  // Perfect framing for "Patrol"
+    return 10.5;              // Wide view for "Radar" (15 miles)
 }
 function calcDist(lat1, lon1, lat2, lon2) {
     const R = 3958.8; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -830,6 +751,41 @@ function showToast(message, duration = 1000) {
     if (toastTimeout) clearTimeout(toastTimeout);
     DOM.toast.textContent = message; DOM.toast.classList.add('show');
     toastTimeout = setTimeout(() => DOM.toast.classList.remove('show'), duration);
+}
+function getProjectedPoint(lat, lon, bear, distKm) {
+    const R = 6371; const d = distKm / R; const rLat = lat * Math.PI / 180; const rLon = lon * Math.PI / 180; const rBear = bear * Math.PI / 180;
+    const nLat = Math.asin(Math.sin(rLat) * Math.cos(d) + Math.cos(rLat) * Math.sin(d) * Math.cos(rBear));
+    const nLon = rLon + Math.atan2(Math.sin(rBear) * Math.sin(d) * Math.cos(rLat), Math.cos(d) - Math.sin(rLat) * Math.sin(nLat));
+    return [nLon * 180 / Math.PI, nLat * 180 / Math.PI];
+}
+function getAircraftTypeName(typeCode) {
+    return AIRCRAFT_TYPES[typeCode] || typeCode || "Unknown Aircraft";
+}
+function getIconType(t, category) {
+    if (!t) return 'plane-jet';
+    const type = t.toUpperCase();
+    if (category === 'A7' || category === 'H' || type === 'HEL' || /^(H1|H4|H6|EC|AS|AW|UH|R4|R6)/.test(type)) return 'heli-icon';
+    if (/^(F1|F2|F3|T3|T4|EU|MI|SU|GR|J\d)/.test(type)) return 'plane-fighter';
+    if (type === 'C5' || type === 'C5M' || type === 'C17' || /^(B7[478]|A3[3458]|DC10|MD11|IL76|AN12|AN22)/.test(type)) return 'plane-heavy';
+    if (/^(C1[578]|C20|PA|AT|DH|BE|PC|TBM|SR|DA|RV)/.test(type)) return 'plane-prop';
+    return 'plane-jet';
+}
+function getFlightPhase(p) {
+    const alt = p.alt_baro === 'ground' ? 0 : (p.alt_baro || 0); const gs = p.gs || 0; const vs = p.baro_rate || 0;
+    if (p.alt_baro === 'ground' || alt < 100) return gs < 5 ? 'ground' : (gs < 30 ? 'ground' : 'takeoff');
+    if (alt < 1500) return vs > 300 ? 'takeoff' : (vs < -300 ? 'landing' : 'approach');
+    if (alt < 10000) return vs > 500 ? 'climb' : (vs < -500 ? 'descent' : 'cruise');
+    return vs > 300 ? 'climb' : (vs < -300 ? 'descent' : 'cruise');
+}
+function formatAltitude(alt, isGround) {
+    if (isGround || alt === 'ground') return { value: 'GND', unit: '', fl: false };
+    const altNum = Math.round(alt);
+    return { value: altNum.toLocaleString(), unit: 'ft', fl: false };
+}
+function formatVerticalSpeed(vs) {
+    if (!vs || Math.abs(vs) < 50) return { value: '0', trend: 'level', arrow: '—' };
+    const rounded = Math.round(vs / 50) * 50;
+    return vs > 100 ? { value: `+${rounded}`, trend: 'climbing', arrow: '↑' } : { value: `${rounded}`, trend: 'descending', arrow: '↓' };
 }
 // === FOCUS TRAP FOR MODALS ===
 const focusTrap = {
@@ -905,45 +861,12 @@ const focusTrap = {
         this.previousActiveElement = null;
     }
 };
-function getProjectedPoint(lat, lon, bear, distKm) {
-    const R = 6371; const d = distKm / R; const rLat = lat * Math.PI / 180; const rLon = lon * Math.PI / 180; const rBear = bear * Math.PI / 180;
-    const nLat = Math.asin(Math.sin(rLat) * Math.cos(d) + Math.cos(rLat) * Math.sin(d) * Math.cos(rBear));
-    const nLon = rLon + Math.atan2(Math.sin(rBear) * Math.sin(d) * Math.cos(rLat), Math.cos(d) - Math.sin(rLat) * Math.sin(nLat));
-    return [nLon * 180 / Math.PI, nLat * 180 / Math.PI];
-}
-function getAircraftTypeName(typeCode) {
-    return AIRCRAFT_TYPES[typeCode] || typeCode || "Unknown Aircraft";
-}
-function getIconType(t, category) {
-    if (!t) return 'plane-jet';
-    const type = t.toUpperCase();
-    if (category === 'A7' || category === 'H' || type === 'HEL' || /^(H1|H4|H6|EC|AS|AW|UH|R4|R6)/.test(type)) return 'heli-icon';
-    if (/^(F1|F2|F3|T3|T4|EU|MI|SU|GR|J\d)/.test(type)) return 'plane-fighter';
-    if (type === 'C5' || type === 'C5M' || type === 'C17' || /^(B7[478]|A3[3458]|DC10|MD11|IL76|AN12|AN22)/.test(type)) return 'plane-heavy';
-    if (/^(C1[578]|C20|PA|AT|DH|BE|PC|TBM|SR|DA|RV)/.test(type)) return 'plane-prop';
-    return 'plane-jet';
-}
-function getFlightPhase(p) {
-    const alt = p.alt_baro === 'ground' ? 0 : (p.alt_baro || 0); const gs = p.gs || 0; const vs = p.baro_rate || 0;
-    if (p.alt_baro === 'ground' || alt < 100) return gs < 5 ? 'ground' : (gs < 30 ? 'ground' : 'takeoff');
-    if (alt < 1500) return vs > 300 ? 'takeoff' : (vs < -300 ? 'landing' : 'approach');
-    if (alt < 10000) return vs > 500 ? 'climb' : (vs < -500 ? 'descent' : 'cruise');
-    return vs > 300 ? 'climb' : (vs < -300 ? 'descent' : 'cruise');
-}
-function formatAltitude(alt, isGround) {
-    if (isGround || alt === 'ground') return { value: 'GND', unit: '', fl: false };
-    const altNum = Math.round(alt);
-    return { value: altNum.toLocaleString(), unit: 'ft', fl: false };
-}
-function formatVerticalSpeed(vs) {
-    if (!vs || Math.abs(vs) < 50) return { value: '0', trend: 'level', arrow: '—' };
-    const rounded = Math.round(vs / 50) * 50;
-    return vs > 100 ? { value: `+${rounded}`, trend: 'climbing', arrow: '↑' } : { value: `${rounded}`, trend: 'descending', arrow: '↓' };
-}
-
 // === MAP INITIALIZATION ===
 function initMap() {
     try {
+        // CRASH FIX: Reset flag so animation loop waits
+        state.isMapReady = false; 
+
         state.map = new maplibregl.Map({
             container: 'map',
             style: {
@@ -952,7 +875,10 @@ function initMap() {
                 sources: { 'osm': { type: 'raster', tiles: [CONFIG.MAP_TILES], tileSize: 256 }},
                 layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
             },
-            center: [state.lon || -98.5, state.lat || 39.8], zoom: 12, attributionControl: false
+            // Use the calculated zoom for the current radius (8 mi -> 11.5)
+            center: [state.lon || -98.5, state.lat || 39.8], 
+            zoom: getZoomForRadius(state.radius), 
+            attributionControl: false
         });
 
         state.map.on('load', () => {
@@ -962,7 +888,7 @@ function initMap() {
             state.map.addSource('flight-predictions', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
             state.map.addSource('user-location', { type: 'geojson', data: { type: 'FeatureCollection', features: [] }});
 
-            state.map.addLayer({ id: 'radar-layer', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.4 }, layout: { 'visibility': 'none' }});
+            state.map.addLayer({ id: 'radar-layer', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.4 }, layout: { 'visibility': state.radarEnabled ? 'visible' : 'none' }});
 
             const iconColor = "#ebffeb";
             const loadIcon = (name, svg) => {
@@ -994,7 +920,6 @@ function initMap() {
                 paint: { 'circle-radius': 6, 'circle-color': '#ebffeb', },
                 filter: ['==', '$type', 'Point']
             });
-            
             state.map.addLayer({
                 id: 'planes-layer', type: 'symbol', source: 'planes',
                 layout: { 
@@ -1005,7 +930,6 @@ function initMap() {
                 },
                 paint: { 'icon-opacity': 0.95 }
             });
-
             state.map.addLayer({
                 id: 'planes-labels', type: 'symbol', source: 'planes', minzoom: 4, 
                 layout: {
@@ -1021,20 +945,35 @@ function initMap() {
                 paint: { 'text-color': 'rgba(245, 245, 247, 0.65)', 'text-halo-color': 'rgba(0,0,0,0.95)', 'text-halo-width': 2, 'text-halo-blur': 0.5 }
             });
 
-            state.map.on('click', 'planes-layer', (e) => { if (e.features.length > 0) { haptic('light'); enterCockpitMode(e.features[0].properties.hex); }});
+            // Interaction Handlers
+            state.map.on('click', 'planes-layer', (e) => { 
+                if (e.features.length > 0) { 
+                    haptic('light'); 
+                    enterCockpitMode(e.features[0].properties.hex); 
+                }
+            });
             state.map.on('mouseenter', 'planes-layer', () => state.map.getCanvas().style.cursor = 'pointer');
             state.map.on('mouseleave', 'planes-layer', () => state.map.getCanvas().style.cursor = '');
+            
+            // Pin Drop logic
             state.map.on('click', (e) => {
-    const features = state.map.queryRenderedFeatures(e.point, { layers: ['planes-layer'] });
-    if (features.length > 0) return;
-    state.useGeo = false; state.lat = e.lngLat.lat; state.lon = e.lngLat.lng;
-    state.map.flyTo({ center: [state.lon, state.lat], speed: 0.8 });
-    updateUserLocation(state.lat, state.lon);
-    DOM.locationDisplay.textContent = `${Math.abs(state.lat).toFixed(2)}°`; DOM.statusDisplay.textContent = 'Pin Drop'; document.getElementById('locationSource').textContent = 'PIN'; DOM.resetBtn.style.display = 'flex';
-    haptic('medium'); debouncedFetchPlanes(); updateWeather(true);  // Changed
-});
+                const features = state.map.queryRenderedFeatures(e.point, { layers: ['planes-layer'] });
+                if (features.length > 0) return;
+                state.useGeo = false; state.lat = e.lngLat.lat; state.lon = e.lngLat.lng;
+                state.map.flyTo({ center: [state.lon, state.lat], speed: 0.8 });
+                updateUserLocation(state.lat, state.lon);
+                DOM.locationDisplay.textContent = `${Math.abs(state.lat).toFixed(2)}°`; 
+                DOM.statusDisplay.textContent = 'Pin Drop'; 
+                document.getElementById('locationSource').textContent = 'PIN'; 
+                DOM.resetBtn.style.display = 'flex';
+                haptic('medium'); fetchPlanes(); updateWeather(true);
+            });
+
+            // CRASH FIX: Mark map as ready!
+            state.isMapReady = true;
         });
 
+        // Initialize Secondary Cockpit Map
         const cockpitMapStyle = {
             version: 8,
             sources: {
@@ -1043,7 +982,7 @@ function initMap() {
             },
             layers: [
                 { id: 'sat', type: 'raster', source: 'satellite', paint: { 'raster-saturation': -0.4 }},
-                { id: 'cockpit-radar', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.6 }, layout: { 'visibility': 'none' } }
+                { id: 'cockpit-radar', type: 'raster', source: 'radar', paint: { 'raster-opacity': 0.6 }, layout: { 'visibility': state.radarEnabled ? 'visible' : 'none' } }
             ],
             sky: { 'sky-color': '#050510', 'sky-horizon-blend': 0.3, 'horizon-color': '#0a2a4a', 'fog-color': '#0a2a4a' }
         };
@@ -1056,29 +995,24 @@ function initMap() {
             };
             cockpitMapStyle.terrain = { source: 'terrain-source', exaggeration: 0 };
         }
+
         state.cockpitMap = new maplibregl.Map({
             container: 'cockpitMap',
             style: cockpitMapStyle,
             center: [0, 0], zoom: 12, pitch: 85, maxPitch: 85, interactive: false
         });
+
     } catch (e) { console.error('Map init error:', e); }
 }
 function updateUserLocation(lat, lon) {
     if (!state.map || !state.map.getSource('user-location')) return;
     state.map.getSource('user-location').setData({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }}] });
 }
-
-// === DATA FETCHING ===
-let consecutiveFailures = 0;
-const MAX_FAILURES_BEFORE_ALERT = 2;
-
 async function fetchPlanes() {
     if (!state.lat || state.isFetchingPlanes) return;
     state.isFetchingPlanes = true;
-    
     if (state.abortController) state.abortController.abort();
     state.abortController = new AbortController();
-    
     try {
         const url = `${CONFIG.API_PLANES}${state.lat}/${state.lon}/${state.radius}`;
         const res = await fetch(url, { signal: state.abortController.signal });
@@ -1086,27 +1020,33 @@ async function fetchPlanes() {
         const data = await res.json();
         const now = Date.now();
         const activeHexes = new Set();
-        
-        // Reset failure counter on success
-        if (consecutiveFailures > 0) {
-            consecutiveFailures = 0;
-            showToast('Connection restored', 2000);
-        }
-        
         if (data.ac) {
             data.ac.forEach(p => {
                 if (!p.lat || !p.lon) return;
                 activeHexes.add(p.hex);
+
+                // === PHYSICS FIX: ANTI-OVERSHOOT ===
+                // Check if plane is on ground or very close to landing
+                const isGround = p.alt_baro === 'ground' || (p.alt_baro !== undefined && p.alt_baro < 200);
+                
+                // If on ground, we force the speed to effectively 0 for prediction purposes.
+                // This prevents the "Skating" effect where it slides off the runway.
                 const speedKmh = (p.gs || 0) * CONFIG.KNOTS_TO_KMH;
-                const distanceIn5s = speedKmh * (5.5 / 3600);
+                const predictionFactor = isGround ? 0.05 : 1.0; // 95% friction if on ground
+                
+                const distanceIn5s = speedKmh * (5.5 / 3600) * predictionFactor;
                 const projected = getProjectedPoint(p.lat, p.lon, p.track || 0, distanceIn5s);
+
                 let pData = state.planesData.get(p.hex);
                 if (pData) {
                     if (!pData.trail) pData.trail = [];
                     pData.trail.push([pData.currentLon, pData.currentLat]);
                     if (pData.trail.length > 30) pData.trail.shift();
-                    pData.startLat = pData.currentLat; pData.startLon = pData.currentLon;
-                    pData.targetLat = projected[1]; pData.targetLon = projected[0];
+                    
+                    pData.startLat = pData.currentLat; 
+                    pData.startLon = pData.currentLon;
+                    pData.targetLat = projected[1]; 
+                    pData.targetLon = projected[0];
                     pData.startTime = now;
                     Object.assign(pData, { alt_baro: p.alt_baro, gs: p.gs, track: p.track, flight: p.flight, t: p.t, baro_rate: p.baro_rate, category: p.category, r: p.r });
                 } else {
@@ -1115,18 +1055,16 @@ async function fetchPlanes() {
                 }
             });
         }
-        
+        // ... (Rest of function remains the same: counts, UI updates, cleanup) ...
         const count = activeHexes.size;
         DOM.planeCount.textContent = count;
         if (count === 0) { DOM.emptyState.classList.add('show'); document.querySelector('.aircraft-count').style.display = 'none'; }
         else { DOM.emptyState.classList.remove('show'); document.querySelector('.aircraft-count').style.display = 'block'; }
-        
         if (count > 0 && !state.hasSeenPlaneTip) {
             state.hasSeenPlaneTip = true; 
             safeLocalStorageSet('pp-seen-plane-tip', 'true'); 
             showToast('Tap a plane', 1000);
         }
-        
         for (let [hex] of state.planesData) {
             if (!activeHexes.has(hex)) {
                 state.planesData.delete(hex);
@@ -1134,70 +1072,70 @@ async function fetchPlanes() {
             }
         }
     } catch (e) { 
-        if (e.name !== 'AbortError') {
-            console.error('Plane fetch error:', e);
-            consecutiveFailures++;
-            
-            // Only show toast after multiple failures to avoid flashing on brief hiccups
-            if (consecutiveFailures === MAX_FAILURES_BEFORE_ALERT) {
-                showToast('Connection lost — retrying...', 3000);
-                haptic('heavy');
-            }
-        }
+        if (e.name !== 'AbortError') console.error('Plane fetch error:', e); 
     } finally { state.isFetchingPlanes = false; }
 }
-function updateWeather(force = false) {
+async function updateWeather(force = false) {
     if (!state.lat || !state.lon) return;
-    const now = Date.now();
-    if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
-    state.lastWxUpdate = now;
-    if (force) state.cachedStationUrl = null;
-    const headers = { 'User-Agent': '(planepatrol.app, mark@subhoo.com)' };
-    const fetchObs = (url) => fetch(url + '/observations/latest', { headers }).then(r => r.ok ? r.json() : Promise.reject()).then(d => d.properties.temperature.value === null ? Promise.reject() : d);
-    const tryStations = (stations, index = 0) => {
-        if (index >= stations.length || index >= 5) return Promise.reject();
-        return fetchObs(stations[index].id).then(d => { state.cachedStationUrl = stations[index].id; return d; }).catch(() => tryStations(stations, index + 1));
-    };
-    (state.cachedStationUrl ? fetchObs(state.cachedStationUrl).catch(() => null) : Promise.resolve(null))
-        .then(cached => cached || fetch(`${CONFIG.API_WX_POINTS}${state.lat},${state.lon}`, { headers }).then(r => r.json()).then(d => fetch(d.properties.observationStations, { headers })).then(r => r.json()).then(d => tryStations(d.features)))
-        .then(d => {
-            const tempF = d.properties.temperature.value !== null ? Math.round((d.properties.temperature.value * 9/5) + 32) : '--';
-            DOM.wxTemp.textContent = `${tempF}°`;
-            DOM.wxCond.textContent = (d.properties.textDescription || 'Clear').split(' ').slice(0, 2).join(' ');
-            DOM.wxWind.textContent = d.properties.windSpeed.value !== null ? Math.round(d.properties.windSpeed.value * 1.94384) : '--';
-        })
-        .catch(() => { DOM.wxTemp.textContent = '--°'; DOM.wxCond.textContent = 'Offline'; DOM.wxWind.textContent = '--'; });
-}
 
+    const now = Date.now();
+    // Prevent spamming the API (Default 15 minutes)
+    if (!force && now - state.lastWxUpdate < CONFIG.WX_POLL_MS) return;
+    
+    state.lastWxUpdate = now;
+
+    // Use Open-Meteo (Global, Free, No Key)
+    // Requesting: Temperature (F), Weather Code, Wind Speed (Knots)
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${state.lat}&longitude=${state.lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=kn`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Weather API Error');
+        
+        const data = await res.json();
+        const current = data.current;
+
+        // Update UI
+        DOM.wxTemp.textContent = `${Math.round(current.temperature_2m)}°`;
+        DOM.wxWind.textContent = Math.round(current.wind_speed_10m);
+        
+        // Convert WMO code to text (e.g., 3 -> "Overcast")
+        const condition = WMO_CODES[current.weather_code] || 'Unknown';
+        DOM.wxCond.textContent = condition;
+
+    } catch (e) {
+        console.warn('Weather fetch failed:', e);
+        DOM.wxTemp.textContent = '--°'; 
+        DOM.wxCond.textContent = 'Offline'; 
+        DOM.wxWind.textContent = '--';
+    }
+}
 // === ANIMATION & LOOP ===
 function animatePlanes() {
-    // FIX: Don't kill the loop completely when hidden, just return
-    // Browser throttles rAF automatically anyway
-    
     const now = Date.now();
     if (now - state.lastAnimateTime < CONFIG.ANIMATION_FRAME_MS) { 
         requestAnimationFrame(animatePlanes); 
         return; 
     }
     state.lastAnimateTime = now;
-    
+	if (!state.map || !state.isMapReady || !state.map.getSource('planes')) { 
+        requestAnimationFrame(animatePlanes); 
+        return; 
+    }
     if (state.mode === 'cockpit' && now - state.lastCockpitUpdateTime >= CONFIG.COCKPIT_UPDATE_MS) {
         state.lastCockpitUpdateTime = now;
         updateCockpitView();
     }
-    
     if (!state.map || !state.map.getSource('planes')) { 
         requestAnimationFrame(animatePlanes); 
         return; 
     }
-    
     // Always interpolate for smooth movement
     state.planesData.forEach((p, hex) => {
         const progress = Math.min((now - p.startTime) / CONFIG.ANIMATION_DURATION, 1);
         p.currentLat = p.startLat + (p.targetLat - p.startLat) * progress;
         p.currentLon = p.startLon + (p.targetLon - p.startLon) * progress;
     });
-    
     // Update Map Sources
     if (now - state.lastMapUpdateTime >= CONFIG.MAP_UPDATE_MS) {
         state.lastMapUpdateTime = now;
@@ -1234,29 +1172,24 @@ function startAnimationLoop() {
         requestAnimationFrame(animatePlanes);
     }
 }
-
 function enterCockpitMode(hex) {
     const p = state.planesData.get(hex); if (!p) return;
     haptic('medium'); state.selectedHex = hex; state.mode = 'cockpit';
     document.getElementById('cockpitSoundToggle').classList.toggle('active', state.soundEnabled);
-    
     if (engineAudio.ctx && engineAudio.ctx.state === 'suspended') engineAudio.ctx.resume();
     const iconType = getIconType(p.t, p.category);
     let soundType = 'jet'; if (iconType === 'heli-icon') soundType = 'heli'; else if (iconType === 'plane-prop') soundType = 'prop';
     engineAudio.play(soundType);
-
     DOM.mainView.classList.add('hidden'); DOM.cockpitView.classList.add('active'); state.cockpitMap.resize();
     const dist = calcDist(state.lat, state.lon, p.currentLat, p.currentLon).toFixed(1);
     const direction = getRelativeDirection(state.lat, state.lon, p.currentLat, p.currentLon);
     showToast(`Look ${direction} (${dist} mi)`, 3000);
-
     if (!state.hasSeenCockpitTip) {
         state.hasSeenCockpitTip = true; safeLocalStorageSet('pp-seen-cockpit-tip', 'true');
         setTimeout(() => showToast('Toggle sound', 1000), 2500);
     }
     setTimeout(() => { if (state.mode === 'cockpit') document.getElementById('map').style.visibility = 'hidden'; }, 500);
 }
-
 function getRelativeDirection(lat1, lon1, lat2, lon2) {
     const toRad = x => x * Math.PI / 180;
     const dLon = toRad(lon2 - lon1);
@@ -1266,7 +1199,6 @@ function getRelativeDirection(lat1, lon1, lat2, lon2) {
     const cardinals = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
     return cardinals[Math.round(deg / 45) % 8];
 }
-
 function exitCockpitMode() {
     engineAudio.stop(true); 
     if (engineAudio.ctx) engineAudio.ctx.suspend();
@@ -1278,28 +1210,31 @@ function exitCockpitMode() {
         state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius), pitch: 0 });
     }
 }
-
 function updateCockpitView() {
     if (!state.selectedHex || !state.cockpitMap) return;
     const p = state.planesData.get(state.selectedHex); 
     if (!p) return;
-
+    
+    // Update Text Data
     const callsign = p.flight ? p.flight.trim() : (p.r || p.hex);
     DOM.cCallsign.textContent = callsign; 
     DOM.cType.textContent = getAircraftTypeName(p.t);
     const regEl = document.getElementById('cReg');
     if (p.r) { regEl.textContent = p.r; regEl.style.display = 'block'; } else { regEl.style.display = 'none'; }
-
     DOM.cDist.textContent = calcDist(state.lat, state.lon, p.currentLat, p.currentLon).toFixed(1);
+    
     const altInfo = formatAltitude(p.alt_baro, p.alt_baro === 'ground');
     DOM.cAlt.textContent = altInfo.value; document.getElementById('cAltUnit').textContent = altInfo.unit;
+    
     const vsInfo = formatVerticalSpeed(p.baro_rate);
     document.getElementById('cVsi').textContent = vsInfo.value;
     const vsiIndicator = document.getElementById('vsiIndicator'); 
     vsiIndicator.textContent = vsInfo.arrow; vsiIndicator.className = `vsi-indicator ${vsInfo.trend}`;
-    DOM.cSpd.textContent = Math.round(p.gs || 0);
-
+    
+    const speed = p.gs || 0;
+    DOM.cSpd.textContent = Math.round(speed);
     document.getElementById('compassRing').style.transform = `rotate(-${Math.round(p.track || 0)}deg)`;
+    
     const phase = getFlightPhase(p);
     const phaseBadge = document.getElementById('phaseBadge');
     const phaseLabels = { ground: 'On Ground', takeoff: 'Takeoff', climb: 'Climbing', cruise: 'Cruising', descent: 'Descending', approach: 'Approach', landing: 'Landing' };
@@ -1309,32 +1244,38 @@ function updateCockpitView() {
     else if (['takeoff','climb'].includes(phase)) phaseBadge.classList.add('climbing'); 
     else if (['descent','approach','landing'].includes(phase)) phaseBadge.classList.add('descending');
     
+    // === CAMERA FIX ===
     const alt = p.alt_baro === 'ground' ? 0 : p.alt_baro;
     const zoom = Math.max(9, 16 - (alt / 6000));
-    const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, Math.max(0.5, (17 - zoom) * 2.5));
     
-    // Smoother ease for cockpit
+    // LOGIC: If strictly on ground OR very low/slow, FORCE lookahead to 0.
+    // This snaps the camera to the plane instantly on touchdown.
+    const isGround = p.alt_baro === 'ground' || alt < 100 || speed < 40;
+    const lookAheadDist = isGround ? 0 : Math.max(0.5, (17 - zoom) * 2.5);
+    
+    // We use p.currentLat/Lon (interpolated) but since we fixed fetchPlanes, 
+    // this will now be much closer to reality.
+    const target = getProjectedPoint(p.currentLat, p.currentLon, p.track || 0, lookAheadDist);
+    
     state.cockpitMap.easeTo({ 
         center: target, zoom: zoom, pitch: 80, bearing: p.track || 0,
         duration: CONFIG.COCKPIT_UPDATE_MS, easing: (t) => t 
     });
 }
-
 function selectRadius(r) {
     state.radius = r;
     document.querySelectorAll('.range-opt').forEach(el => el.classList.toggle('selected', parseInt(el.dataset.range) === r));
-    debouncedFetchPlanes();  // Changed from fetchPlanes()
+    fetchPlanes();
     if (state.map) state.map.setZoom(getZoomForRadius(r));
     haptic('light');
 }
-
 function resetToGPS() {
     state.useGeo = true; DOM.resetBtn.style.display = 'none'; document.getElementById('locationSource').textContent = 'GPS';
     if (state.lastKnownGeo) {
         state.lat = state.lastKnownGeo.lat; state.lon = state.lastKnownGeo.lon;
         DOM.locationDisplay.textContent = `${state.lat.toFixed(2)}°`; DOM.statusDisplay.textContent = 'Live';
         if (state.map) { state.map.flyTo({ center: [state.lon, state.lat], zoom: getZoomForRadius(state.radius) }); updateUserLocation(state.lat, state.lon); }
-        updateWeather(true); debouncedFetchPlanes();  // Changed
+        updateWeather(true); fetchPlanes();
     }
 }
 // === NEW STARTUP LOGIC ===
@@ -1348,43 +1289,58 @@ function getStoredLocation() {
     return null;
 }
 
-// 2. Main Startup Function
-function startApp() {
-    if (state.initializing) return; 
+// === UPDATED STARTUP LOGIC ===
+async function startApp() {
+    if (state.initializing) return;
     state.initializing = true;
 
     const storedLoc = getStoredLocation();
-    
-    // SCENARIO A: Returning User (Load immediately)
-    if (storedLoc) {
-        DOM.splashScreen.classList.add('hidden'); // Hide splash immediately
-        initializeMapAt(storedLoc.lat, storedLoc.lon); // Show map immediately
-        startGpsTracking(); // Refine location in background
-    } 
-    // SCENARIO B: New User (Show "Soft Ask" Modal)
-    else {
-        DOM.splashScreen.classList.add('hidden');
-        const welcomeModal = document.getElementById('welcomeModal');
-        welcomeModal.classList.add('active'); // Show our styled permission request
-        
-        document.getElementById('enableGpsBtn').addEventListener('click', () => {
-            haptic('medium');
-            welcomeModal.classList.remove('active');
-            // Default center (US) just to get the map rendering while we ask for permissions
-            initializeMapAt(39.8, -98.5); 
-            startGpsTracking();
-        }, { once: true });
+    let permissionGranted = false;
+    const welcomeModal = document.getElementById('welcomeModal');
+
+    // 1. CHECK PERMISSIONS
+    if (navigator.permissions && navigator.permissions.query) {
+        try {
+            const result = await navigator.permissions.query({ name: 'geolocation' });
+            permissionGranted = (result.state === 'granted');
+        } catch (e) { permissionGranted = false; }
     }
 
-    // Initialize non-map systems
-    setupAudioUnlock();
+    // 2. RETURNING USER (Fast Track)
+    if (storedLoc && permissionGranted) {
+        welcomeModal.classList.remove('active');
+        initializeMapAt(storedLoc.lat, storedLoc.lon);
+        startGpsTracking();
+    } 
+    // 3. NEW USER (Stay on "Splash/Modal")
+    else {
+        welcomeModal.classList.add('active'); 
+
+        const btn = document.getElementById('enableGpsBtn');
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener('click', () => {
+            haptic('medium');
+            
+            // FIX: Initialize Audio Context HERE (Valid User Gesture)
+            if (!engineAudio.ctx) engineAudio.init(); 
+            
+            welcomeModal.classList.remove('active');
+            
+            if (storedLoc) {
+                initializeMapAt(storedLoc.lat, storedLoc.lon);
+            } else {
+                initializeMapAt(39.8, -98.5);
+            }
+            startGpsTracking();
+        });
+    }
+
     setupInteractionListeners();
     state.wxInterval = setInterval(() => updateWeather(), CONFIG.WX_POLL_MS);
-    
-    // Start animation loop immediately (even if no planes yet)
     startAnimationLoop();
 }
-
 function initializeMapAt(lat, lon) {
     if (!state.map) { 
         state.lat = lat; 
@@ -1445,17 +1401,8 @@ function startGpsTracking() {
     }, { 
         enableHighAccuracy: true, 
         timeout: 15000, 
-        maximumAge: 10000 
+        maximumAge: 5000 
     });
-}
-
-function setupAudioUnlock() {
-    const unlockAudio = () => {
-        if (engineAudio.ctx && engineAudio.ctx.state === 'suspended') engineAudio.ctx.resume();
-        else if (!engineAudio.ctx) engineAudio.init();
-        ['click', 'touchstart'].forEach(evt => document.removeEventListener(evt, unlockAudio));
-    };
-    ['click', 'touchstart'].forEach(evt => document.addEventListener(evt, unlockAudio, { once: true, passive: true }));
 }
 
 function setupInteractionListeners() {
@@ -1471,16 +1418,79 @@ function quitApp() {
     document.getElementById('offlineOverlay').style.display = 'flex';
     DOM.statusDisplay.textContent = 'Offline'; DOM.planeCount.textContent = '0';
 }
-function wakeApp() { if (state.initializing) return; document.getElementById('offlineOverlay').style.display = 'none'; startApp(); }
+function wakeApp() {
+    // 1. Remove Overlay & Update Status
+    document.getElementById('offlineOverlay').style.display = 'none';
+    DOM.statusDisplay.textContent = 'Resuming...';
+
+    // 2. CRITICAL FIX: Clear stale data immediately
+    // This prevents "Frozen" planes from appearing while we wait for new data
+    state.planesData.clear();
+    if (state.map && state.isMapReady) {
+        // Wipe the map visual layer instantly
+        state.map.getSource('planes').setData({ type: 'FeatureCollection', features: [] });
+        state.map.getSource('flight-trails').setData({ type: 'FeatureCollection', features: [] });
+        state.map.getSource('flight-predictions').setData({ type: 'FeatureCollection', features: [] });
+    }
+
+    // 3. Restart GPS (If using GPS mode)
+    if (state.useGeo) {
+        startGpsTracking();
+    } else {
+        DOM.statusDisplay.textContent = 'Pin Drop';
+    }
+
+    // 4. Restart Data Polling
+    if (state.planeInterval) clearInterval(state.planeInterval);
+    state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
+    
+    // Fetch fresh data immediately
+    fetchPlanes(); 
+    
+    if (!state.wxInterval) state.wxInterval = setInterval(updateWeather, CONFIG.WX_POLL_MS);
+    updateWeather();
+
+    // 5. Restart Animation Loop (Bulletproof)
+    // We reset the time trackers to ensure the first frame is clean
+    state.lastAnimateTime = 0; 
+    
+    if (!state.animationRunning) {
+        state.animationRunning = true;
+        requestAnimationFrame(animatePlanes);
+    }
+}
 function cleanup() {
+    // 1. Clean Timers & GPS
     if (state.wxInterval) clearInterval(state.wxInterval);
     if (state.planeInterval) clearInterval(state.planeInterval);
     if (state.watchId) navigator.geolocation.clearWatch(state.watchId);
-    if (state.map) state.map.remove();
-    if (state.cockpitMap) state.cockpitMap.remove();
+    
+    // 2. Clean Main Map (Null FIRST, then remove)
+    if (state.map) {
+        const mapRef = state.map; // Hold a temp reference
+        state.map = null;         // Clear state immediately to prevent double-runs
+        state.isMapReady = false; 
+        
+        try {
+            mapRef.remove();
+        } catch (e) {
+            // Ignore errors during removal (browser is closing anyway)
+        }
+    }
+
+    // 3. Clean Cockpit Map (Null FIRST, then remove)
+    if (state.cockpitMap) {
+        const cockpitRef = state.cockpitMap;
+        state.cockpitMap = null;
+        
+        try {
+            cockpitRef.remove();
+        } catch (e) { }
+    }
+
+    // 4. Stop Audio
     engineAudio.stop(true);
 }
-
 // === NAVIGATOR LOGIC ===
 const exploreModal = document.getElementById('exploreModal');
 document.getElementById('exploreBtn').addEventListener('click', () => { 
@@ -1507,38 +1517,123 @@ document.querySelectorAll('.hotspot-btn').forEach(btn => {
 document.getElementById('searchBtn').addEventListener('click', performSearch);
 document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
 
+// 1. GLOBAL HELPER: Moves the map (Must be outside performSearch so buttons can use it)
+function teleportTo(lat, lon, msg) {
+    // A. Disable GPS auto-centering
+    state.useGeo = false; 
+    
+    // B. Update State
+    state.lat = lat; 
+    state.lon = lon;
+    
+    // C. Update UI
+    DOM.locationDisplay.textContent = `${Math.abs(state.lat).toFixed(2)}°`; 
+    DOM.statusDisplay.textContent = 'Remote'; 
+    document.getElementById('locationSource').textContent = 'SRCH'; 
+    DOM.resetBtn.style.display = 'flex'; 
+    
+    // D. Move Map
+    if (state.map) {
+        state.map.flyTo({ 
+            center: [state.lon, state.lat], 
+            zoom: getZoomForRadius(state.radius),
+            speed: 1.2
+        });
+        updateUserLocation(state.lat, state.lon);
+    }
+    
+    // E. Refresh Data
+    DOM.planeCount.textContent = '...';
+    state.planesData.clear(); 
+    fetchPlanes(); 
+    updateWeather(true);
+    
+    // F. User Feedback
+    if (msg) showToast(msg, 2000);
+    haptic('medium');
+    
+    // G. Close Modal
+    const modal = document.getElementById('exploreModal');
+    if (modal.classList.contains('active')) {
+        modal.classList.remove('active');
+        if (focusTrap) focusTrap.deactivate(modal);
+    }
+}
+
+// 2. SEARCH LOGIC: Handles the input and API calls
 async function performSearch() {
-    const input = document.getElementById('searchInput'); const errorMsg = document.getElementById('searchError'); const query = input.value.trim().toUpperCase();
+    const input = document.getElementById('searchInput');
+    const errorMsg = document.getElementById('searchError');
+    const query = input.value.trim().toUpperCase();
+    
     if (!query) return;
-    input.disabled = true; errorMsg.textContent = 'Searching...';
+    
+    input.disabled = true;
+    errorMsg.textContent = 'Searching...';
+    
     try {
-        if (/^[A-Z]{3,4}$/.test(query)) {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}+airport&format=json&limit=1`, { headers: { 'User-Agent': 'PlanePatrol/1.0' }});
-            const data = await res.json();
-            if (data && data.length > 0) finishSearch(parseFloat(data[0].lat), parseFloat(data[0].lon), `Welcome to ${query}`);
-            else await searchCallsign(query);
-        } else await searchCallsign(query);
-    } catch (e) { errorMsg.textContent = 'Search failed. Check connection.'; haptic('heavy'); } 
-    finally { input.disabled = false; input.focus(); }
+        let found = false;
+
+        // STRATEGY 1: ArcGIS Geocoding
+        const searchString = query.length <= 4 ? `${query} Airport` : query;
+
+        if (query.length > 2) {
+            try {
+                const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${encodeURIComponent(searchString)}&Category=Airport&f=json&maxLocations=1`;
+                
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const result = data.candidates[0];
+                    const lat = result.location.y;
+                    const lon = result.location.x;
+                    const name = result.address.replace(' (Airport)', '');
+                    
+                    finishSearch(lat, lon, `✈️ ${name}`);
+                    found = true;
+                    return; 
+                }
+            } catch (e) {
+                console.warn("ArcGIS lookup skipped:", e);
+            }
+        }
+
+        // STRATEGY 2: Fallback to Aircraft Callsign
+        if (!found) {
+            await searchCallsign(query);
+        }
+
+    } catch (e) {
+        console.error(e);
+        errorMsg.textContent = 'No airport or aircraft found.';
+        haptic('heavy');
+    } finally {
+        input.disabled = false;
+        input.focus();
+    }
+    
+    // --- NESTED HELPERS (Must stay inside to access 'input' and 'errorMsg') ---
     
     async function searchCallsign(code) {
         const res = await fetch(`https://api.airplanes.live/v2/callsign/${code}`);
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error('API Error');
+        
         const data = await res.json();
         const aircraft = data.ac ? data.ac.find(p => p.lat && p.lon) : null;
-        if (aircraft) finishSearch(aircraft.lat, aircraft.lon, `Found ${code}`); else { errorMsg.textContent = 'Not found (or not airborne).'; haptic('heavy'); }
+
+        if (aircraft) {
+            finishSearch(aircraft.lat, aircraft.lon, `Tracking ${code}`);
+        } else {
+            throw new Error('Aircraft not found');
+        }
     }
-    function finishSearch(lat, lon, msg) { errorMsg.textContent = ''; input.value = ''; teleportTo(lat, lon, msg); }
-}
-function teleportTo(lat, lon, message) {
-    const modal = document.getElementById('exploreModal');
-    modal.classList.remove('active');
-    focusTrap.deactivate(modal);
-    state.useGeo = false; state.lat = lat; state.lon = lon;
-    state.map.flyTo({ center: [lon, lat], zoom: 11, speed: 1.2 });
-    updateUserLocation(lat, lon);
-    DOM.locationDisplay.textContent = `${lat.toFixed(2)}°`; DOM.statusDisplay.textContent = 'Explorer'; document.getElementById('locationSource').textContent = 'MAP';
-    DOM.resetBtn.style.display = 'flex'; debouncedFetchPlanes(); updateWeather(true); showToast(message, 2000);  // Changed
+
+    function finishSearch(lat, lon, msg) {
+        errorMsg.textContent = '';
+        input.value = ''; 
+        teleportTo(lat, lon, msg); // Calls the global function
+    }
 }
 
 // === EVENT LISTENERS ===
@@ -1587,36 +1682,70 @@ document.getElementById('confirmQuitBtn').addEventListener('click', () => {
     setTimeout(quitApp, 200); 
 });
 document.getElementById('wakeBtn').addEventListener('click', () => { haptic('medium'); wakeApp(); });
-
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
+        // === APP WENT TO BACKGROUND ===
+        
+        // 1. Stop Polling Intervals to save CPU/Network
         if (state.wxInterval) clearInterval(state.wxInterval);
         if (state.planeInterval) clearInterval(state.planeInterval);
+        
+        // 2. Kill Audio immediately
         engineAudio.stop(true);
         if (engineAudio.ctx) engineAudio.ctx.suspend();
+        
+        // 3. AGGRESSIVE BATTERY SAVER: Stop GPS Hardware
+        // GPS chips drain significant battery. We cut the connection 
+        // strictly when the app is not visible.
+        if (state.watchId) {
+            navigator.geolocation.clearWatch(state.watchId);
+            state.watchId = null;
+            // Note: We don't change 'state.useGeo' here, just stop the hardware listener
+        }
+
     } else {
+        // === APP CAME TO FOREGROUND ===
+        
+        // Check if the user had previously "Quit" (paused) the app manually
         const isOffline = document.getElementById('offlineOverlay').style.display === 'flex';
+
         if (state.map && !isOffline) {
-            // Restart Interval
+            // 1. Restart GPS (Only if the user was actually using GPS mode)
+            if (state.useGeo && !state.watchId) {
+                startGpsTracking();
+            }
+
+            // 2. Restart Data Polling
+            // Clear existing first just to be safe, then start fresh
             if (state.planeInterval) clearInterval(state.planeInterval);
             state.planeInterval = setInterval(fetchPlanes, CONFIG.POLL_MS);
-            fetchPlanes();
-
+            fetchPlanes(); // Fetch immediately so user doesn't wait 5s
+            
             if (!state.wxInterval) state.wxInterval = setInterval(updateWeather, CONFIG.WX_POLL_MS);
+            // Update weather immediately if the cache is old
+            if (Date.now() - state.lastWxUpdate > CONFIG.WX_POLL_MS) updateWeather();
+
+            // 3. Resume Audio (If in Cockpit Mode + Sound Enabled)
             if (state.soundEnabled && state.mode === 'cockpit' && state.selectedHex) {
                 if (engineAudio.ctx && engineAudio.ctx.state === 'suspended') engineAudio.ctx.resume();
+                
+                // Re-check plane type to play correct engine sound
                 const p = state.planesData.get(state.selectedHex);
                 if (p) {
                     const iconType = getIconType(p.t, p.category);
-                    let soundType = 'jet'; if (iconType === 'heli-icon') soundType = 'heli'; else if (iconType === 'plane-prop') soundType = 'prop';
+                    let soundType = 'jet'; 
+                    if (iconType === 'heli-icon') soundType = 'heli'; 
+                    else if (iconType === 'plane-prop') soundType = 'prop';
                     engineAudio.play(soundType);
                 }
             }
+
+            // 4. Restart the Animation Loop
+            // This is critical because browsers often kill requestAnimationFrame in the background
             startAnimationLoop();
         }
     }
 });
-
 let lastActivity = Date.now();
 setInterval(() => { if ((Date.now() - lastActivity) / 60000 > 30) { quitApp(); lastActivity = Date.now(); }}, 60000);
 ['click', 'touchstart', 'mousemove'].forEach(evt => document.addEventListener(evt, () => lastActivity = Date.now(), { passive: true }));
