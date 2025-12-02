@@ -10,13 +10,29 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0d0d0f">
-    <meta name="apple-mobile-web-app-title" content="PlanePatrol">
-    <title>PlanePatrol</title>
+    <meta name="apple-mobile-web-app-title" content="PlaneSpotted">
+	<title>PlaneSpotted</title>
     <script src="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.js"></script>
     <link href="https://unpkg.com/maplibre-gl@5.1.0/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 120 120'%3E%3Cpath fill='%23000000' d='M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z'/%3E%3C/svg%3E">
+	<link rel="apple-touch-icon" sizes="57x57" href="images/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="images/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="images/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="images/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="images/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="images/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="images/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="images/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192"  href="images/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="images/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+<link rel="manifest" href="images/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="images/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
     :root {
@@ -358,16 +374,20 @@
 <body>
 <div class="modal-overlay active" id="welcomeModal" style="z-index: 10000; background: var(--bg);">
     <div class="modal-content" style="max-width: 320px; border: 1px solid var(--separator);">
+        
         <svg viewBox="-10 -10 120 120" fill="#e8e8eb" style="width: 60px; height: 60px; margin-bottom: 16px; animation: float 3s ease-in-out infinite;">
-             <path d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
-        </svg>
-        <div class="modal-title">Plane Patrol</div>
-        <div class="modal-desc" style="margin-bottom: 24px;">
-            Live local aircraft tracking. Enable GPS to see what's flying above you right now.
+    <path transform="rotate(45, 50, 50)" d="M60.494,49.332l35.654,5.811V46.69l-10.494-3.753c0.046-1.388-0.175-4.873-3.474-5.502c0,0-4.388-1.138-4.956,2.487l-2.967-1.061c0.069-1.229-0.006-5.029-3.465-5.69c0,0-4.528-1.172-4.979,2.671l-7.696-2.753V19.224c-0.528-7.923-7.395-8.188-7.395-8.188s-6.867,0.265-7.395,8.188v13.866l-8.167,2.921c-0.336-4.047-4.998-2.839-4.998-2.839c-3.639,0.695-3.532,4.867-3.454,5.861l-2.957,1.058c-0.46-3.824-4.977-2.655-4.977-2.655c-3.445,0.658-3.533,4.43-3.466,5.674L5.295,46.69v8.452l35.655-5.811l2.377,4.227c0,0,0.264,20.864,2.905,24.562l-12.941,6.075l0.265,5.545h34.333l0.265-5.545L55.212,78.12c2.642-3.697,2.905-24.562,2.905-24.562L60.494,49.332z"/>
+</svg>
+
+        <div class="modal-title">PlaneSpotted</div>
+        <div class="modal-desc" style="margin-bottom: 24px; font-size: 13px; line-height: 1.6;">
+            PlaneSpotted is a tiny, open source aircraft tracking engine for spotters and hobby coders.
+            <br><br>
+            Try it in your browser, clone the repo, swap out APIs, and drop it into your own side projects.
         </div>
-        <button class="modal-btn primary" id="enableGpsBtn">Start Tracking</button>
+        <button class="modal-btn primary" id="enableGpsBtn">Start Spotting</button>
         <div style="margin-top: 16px; font-size: 11px; color: var(--text-tertiary);">
-            Precision Mode · Live Data
+            Open Source · Live Data
         </div>
     </div>
 </div>
@@ -703,8 +723,8 @@ const state = {
     watchId: null, isFetchingPlanes: false, hasLockedLocation: false,
     cachedStationUrl: null, lastAnimateTime: 0, initializing: false,
     abortController: null,
-    hasSeenPlaneTip: safeLocalStorage('pp-seen-plane-tip') === 'true',
-    hasSeenCockpitTip: safeLocalStorage('pp-seen-cockpit-tip') === 'true',
+    hasSeenPlaneTip: safeLocalStorage('ps-seen-plane-tip') === 'true',
+    hasSeenCockpitTip: safeLocalStorage('ps-seen-cockpit-tip') === 'true',
     lastMapUpdateTime: 0,
     lastCockpitUpdateTime: 0,
     animationRunning: false
@@ -1282,7 +1302,7 @@ function resetToGPS() {
 
 // 1. Try to get coordinates from LocalStorage to load INSTANTLY
 function getStoredLocation() {
-    const stored = safeLocalStorage('pp-last-known-loc');
+    const stored = safeLocalStorage('ps-last-known-loc');
     if (stored) {
         try { return JSON.parse(stored); } catch (e) { return null; }
     }
